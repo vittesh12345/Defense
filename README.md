@@ -5,10 +5,12 @@ degradations, measures the failure, and emits a reproducible JSON assurance
 report. The output is **measurement** — correctness and reproducibility beat
 speed.
 
-It ships three attacks — **FGSM** (generic gradient), an **optimized patch**, and
-an **EOT patch** (Expectation Over Transformation: a localized patch trained to
-survive being printed and re-photographed at different scales, angles, and
-lighting — the threat-representative one).
+It ships several attacks — white-box **FGSM** (generic gradient), an **optimized
+patch**, and an **EOT patch** (Expectation Over Transformation: a localized patch
+trained to survive being printed and re-photographed at different scales, angles,
+and lighting), plus a black-box **degradation** family (DVE: gaussian/motion
+blur, gaussian noise, fog, low light, JPEG compression) that simulates real
+sensor and weather conditions.
 
 ## Results
 
@@ -78,6 +80,11 @@ SCENE="--images proving_ground/data/fixtures/coco_sample/images \
 # EOT patch (robust to scale/rotation/lighting)
 .venv/bin/python -m proving_ground.cli run $SCENE --attack eot-patch \
   --patch-size 0.4 --steps 15 --step-size 0.1 --out eot_patch.json
+
+# Degradation / DVE (black-box; modes: gaussian_blur, motion_blur,
+# gaussian_noise, fog, low_light, jpeg_compression)
+.venv/bin/python -m proving_ground.cli run $SCENE --attack degradation \
+  --mode fog --severity 0.7 --out fog.json
 ```
 
 ## Test

@@ -20,6 +20,8 @@ from datetime import UTC, datetime
 from proving_ground.adapters.base import Detection, Detector
 from proving_ground.adapters.fake import FakeDetector
 from proving_ground.attacks.base import Attack
+from proving_ground.attacks.degradation import MODES as DEGRADATION_MODES
+from proving_ground.attacks.degradation import DegradationAttack
 from proving_ground.attacks.eot_patch import EOTPatchAttack
 from proving_ground.attacks.fgsm import FGSM
 from proving_ground.attacks.patch import PatchAttack
@@ -99,6 +101,9 @@ def _build_attack(args: argparse.Namespace) -> tuple[Attack, dict[str, float]]:
             "brightness": args.eot_bright, "contrast": args.eot_contrast,
         }
         return attack, params
+    if args.attack == "degradation":
+        attack = DegradationAttack(mode=args.mode, severity=args.severity, seed=args.seed)
+        return attack, {"severity": args.severity}
     raise ValueError(f"unknown attack: {args.attack!r}")
 
 
@@ -181,8 +186,12 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--images", required=True, help="directory of images")
     r.add_argument("--ann", required=True, help="annotations JSON")
     r.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
-    r.add_argument("--attack", default="fgsm", choices=["fgsm", "patch", "eot-patch"],
-                   help="attack to run")
+    r.add_argument("--attack", default="fgsm",
+                   choices=["fgsm", "patch", "eot-patch", "degradation"], help="attack to run")
+    r.add_argument("--mode", default="gaussian_blur", choices=list(DEGRADATION_MODES),
+                   help="degradation: which degradation mode")
+    r.add_argument("--severity", type=float, default=0.5,
+                   help="degradation: severity in [0,1] (0=identity)")
     r.add_argument("--eps", type=float, default=0.03, help="FGSM L-inf budget in [0,1]")
     r.add_argument("--patch-size", type=float, default=0.4,
                    help="patch attack: patch side as a fraction of each image dim")

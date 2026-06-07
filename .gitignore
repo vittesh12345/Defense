@@ -11,13 +11,9 @@ __pycache__/
 *.pt
 *.onnx
 
-# Generated outputs (quickstart writes these to the repo root)
-/report*.json
-/results.json
-/fgsm.json
-/patch.json
-/eot.json
-/eot_patch.json
+# Generated outputs — CLI writes report/results JSONs to the repo root.
+# (No committed JSON lives at the repo root; baselines/fixtures are in subdirs.)
+/*.json
 build/
 
 # macOS
