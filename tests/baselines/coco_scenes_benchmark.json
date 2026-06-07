@@ -1,0 +1,42 @@
+{
+  "attacks": [
+    {
+      "attacked_map": 0.07275132275132275,
+      "map_delta": 0.31706857956857964,
+      "name": "fgsm",
+      "params": {
+        "eps": 0.03
+      }
+    },
+    {
+      "attacked_map": 0.09117535903250189,
+      "map_delta": 0.2986445432874005,
+      "name": "patch",
+      "params": {
+        "patch_size": 0.4,
+        "step_size": 0.1,
+        "steps": 20.0
+      }
+    },
+    {
+      "attacked_map": 0.17364672364672365,
+      "map_delta": 0.21617317867317873,
+      "name": "eot-patch",
+      "params": {
+        "brightness": 0.1,
+        "contrast": 0.2,
+        "eot_samples": 4.0,
+        "patch_size": 0.4,
+        "rot_deg": 12.0,
+        "scale_max": 1.2,
+        "scale_min": 0.8,
+        "step_size": 0.1,
+        "steps": 15.0,
+        "trans": 0.05
+      }
+    }
+  ],
+  "clean_map": 0.3898199023199024,
+  "iou_threshold": 0.5,
+  "num_images": 3
+}

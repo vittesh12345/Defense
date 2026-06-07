@@ -151,6 +151,28 @@ def run(args: argparse.Namespace) -> int:
     return 0
 
 
+def bench(args: argparse.Namespace) -> int:
+    """Run the canonical attack suite over an image set; emit a results table."""
+    import json
+
+    from proving_ground.benchmark import default_attacks, results_table, run_benchmark
+
+    set_seed(args.seed)
+    samples, classes = load_dataset(args.images, args.ann)
+    detector, _ = _build_detector(args.model)
+    results = run_benchmark(
+        detector, samples, classes, default_attacks(seed=args.seed),
+        iou_threshold=args.iou, seed=args.seed,
+    )
+    if args.out:
+        from pathlib import Path
+        Path(args.out).write_text(json.dumps(results, indent=2, sort_keys=True) + "\n")
+    print(results_table(results))
+    if args.out:
+        print(f"\nresults written: {args.out}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="proving-ground")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -185,6 +207,15 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
     r.add_argument("--out", default="report.json", help="output JSON path")
     r.set_defaults(func=run)
+
+    b = sub.add_parser("bench", help="run the canonical attack suite over an image set")
+    b.add_argument("--images", required=True, help="directory of images")
+    b.add_argument("--ann", required=True, help="annotations JSON")
+    b.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
+    b.add_argument("--seed", type=int, default=0)
+    b.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
+    b.add_argument("--out", default=None, help="optional results JSON path")
+    b.set_defaults(func=bench)
     return parser
 
 
