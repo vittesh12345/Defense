@@ -1,0 +1,46 @@
+{
+  "classes": [
+    "red",
+    "green",
+    "blue"
+  ],
+  "images": [
+    {
+      "file": "img0.png",
+      "boxes": [
+        {
+          "box_xyxy": [
+            20.0,
+            20.0,
+            60.0,
+            60.0
+          ],
+          "class_id": 0
+        },
+        {
+          "box_xyxy": [
+            80.0,
+            50.0,
+            110.0,
+            80.0
+          ],
+          "class_id": 1
+        }
+      ]
+    },
+    {
+      "file": "img1.png",
+      "boxes": [
+        {
+          "box_xyxy": [
+            40.0,
+            30.0,
+            90.0,
+            70.0
+          ],
+          "class_id": 2
+        }
+      ]
+    }
+  ]
+}
