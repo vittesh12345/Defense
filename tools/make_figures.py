@@ -54,6 +54,27 @@ def _scaled(img: np.ndarray) -> np.ndarray:
     return cv2.resize(img, (PANEL_W, round(h * s)), interpolation=cv2.INTER_AREA)
 
 
+def _panel_fig(detector, sample, attack, label: str) -> np.ndarray:
+    """CLEAN-vs-ATTACKED side-by-side figure for one attack on one sample."""
+    set_seed(0)
+    clean_dets = detector.predict(sample.image)
+    attacked_img = attack.apply(detector, sample.image, sample.ground_truth)
+    attacked_dets = detector.predict(attacked_img)
+    left = _scaled(draw_detections(sample.image, clean_dets, CLEAN_C))
+    right = _scaled(draw_detections(attacked_img, attacked_dets, ATK_C))
+    return side_by_side(
+        left, right,
+        f"CLEAN  ({len(clean_dets)} det)",
+        f"{label.upper()}  ({len(attacked_dets)} det)",
+    )
+
+
+def _write_png(fig: np.ndarray, path: Path) -> None:
+    cv2.imwrite(str(path), cv2.cvtColor(fig, cv2.COLOR_RGB2BGR),
+                [cv2.IMWRITE_PNG_COMPRESSION, 9])
+    print(f"wrote {path}  ({path.stat().st_size // 1024} KB)")
+
+
 def main() -> None:
     OUT.mkdir(exist_ok=True)
     set_seed(0)
@@ -61,24 +82,23 @@ def main() -> None:
     samples, _ = load_dataset(FIX / "images", FIX / "annotations.json")
     by_id = {s.image_id: s for s in samples}
 
+    figs: dict[str, np.ndarray] = {}
     for attack, label, image_id in SPECS:
-        set_seed(0)
-        s = by_id[image_id]
-        clean_dets = detector.predict(s.image)
-        attacked_img = attack.apply(detector, s.image, s.ground_truth)
-        attacked_dets = detector.predict(attacked_img)
+        fig = _panel_fig(detector, by_id[image_id], attack, label)
+        figs[label] = fig
+        _write_png(fig, OUT / f"{label}_{Path(image_id).stem}.png")
 
-        left = _scaled(draw_detections(s.image, clean_dets, CLEAN_C))
-        right = _scaled(draw_detections(attacked_img, attacked_dets, ATK_C))
-        fig = side_by_side(
-            left, right,
-            f"CLEAN  ({len(clean_dets)} det)",
-            f"{label.upper()}  ({len(attacked_dets)} det)",
-        )
-        out_path = OUT / f"{label}_{Path(image_id).stem}.png"
-        cv2.imwrite(str(out_path), cv2.cvtColor(fig, cv2.COLOR_RGB2BGR),
-                    [cv2.IMWRITE_PNG_COMPRESSION, 9])
-        print(f"wrote {out_path}  ({out_path.stat().st_size // 1024} KB)")
+    # Combined DVE figure: fog over low_light on the same scene (both nyc_crossing,
+    # so the CLEAN-vs-ATTACKED panels share width and stack cleanly).
+    top, bottom = figs["fog"], figs["low_light"]
+    sep = np.full((4, top.shape[1], 3), 255, dtype=np.uint8)
+    combined = np.vstack([top, sep, bottom])
+    # Downscale the 4-panel composite so it stays as small as the single figures.
+    scale = 460 / combined.shape[1]
+    combined = cv2.resize(
+        combined, (460, round(combined.shape[0] * scale)), interpolation=cv2.INTER_AREA
+    )
+    _write_png(combined, OUT / "dve_fog_lowlight_nyc.png")
 
 
 if __name__ == "__main__":
