@@ -21,7 +21,30 @@ from proving_ground.adapters.base import (
     tensor_to_image,
 )
 
-__all__ = ["Attack", "image_to_tensor", "tensor_to_image"]
+__all__ = ["Attack", "rect_for", "image_to_tensor", "tensor_to_image"]
+
+
+def rect_for(
+    size: float, location: str | tuple[float, float], image_shape: tuple[int, ...]
+) -> tuple[int, int, int, int]:
+    """Axis-aligned patch rectangle (x1, y1, x2, y2) in pixels, clamped to image.
+
+    Shared by the patch-style attacks so they place patches identically.
+    ``location`` is ``"center"`` or top-left fractions ``(fx, fy)``.
+    """
+    h, w = image_shape[:2]
+    pw = max(1, round(size * w))
+    ph = max(1, round(size * h))
+    if location == "center":
+        x1 = round((w - pw) / 2)
+        y1 = round((h - ph) / 2)
+    else:
+        fx, fy = location
+        x1 = round(fx * w)
+        y1 = round(fy * h)
+    x1 = min(max(0, x1), w - pw)
+    y1 = min(max(0, y1), h - ph)
+    return x1, y1, x1 + pw, y1 + ph
 
 
 @runtime_checkable

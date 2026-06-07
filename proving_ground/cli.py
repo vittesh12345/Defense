@@ -20,6 +20,7 @@ from datetime import UTC, datetime
 from proving_ground.adapters.base import Detection, Detector
 from proving_ground.adapters.fake import FakeDetector
 from proving_ground.attacks.base import Attack
+from proving_ground.attacks.eot_patch import EOTPatchAttack
 from proving_ground.attacks.fgsm import FGSM
 from proving_ground.attacks.patch import PatchAttack
 from proving_ground.data.loaders import Sample, load_dataset
@@ -75,6 +76,27 @@ def _build_attack(args: argparse.Namespace) -> tuple[Attack, dict[str, float]]:
             "loc_y": loc_y,
             "steps": float(args.steps),
             "step_size": args.step_size,
+        }
+        return attack, params
+    if args.attack == "eot-patch":
+        loc = _parse_loc(args.patch_loc)
+        attack = EOTPatchAttack(
+            size=args.patch_size, location=loc, steps=args.steps, step_size=args.step_size,
+            eot_samples=args.eot_samples, scale_min=args.eot_scale_min,
+            scale_max=args.eot_scale_max, rot_deg=args.eot_rot_deg, trans=args.eot_trans,
+            brightness=args.eot_bright, contrast=args.eot_contrast, seed=args.seed,
+        )
+        if loc == "center":
+            loc_x = loc_y = (1.0 - args.patch_size) / 2.0
+        else:
+            loc_x, loc_y = loc
+        params = {
+            "patch_size": args.patch_size, "loc_x": loc_x, "loc_y": loc_y,
+            "steps": float(args.steps), "step_size": args.step_size,
+            "eot_samples": float(args.eot_samples),
+            "scale_min": args.eot_scale_min, "scale_max": args.eot_scale_max,
+            "rot_deg": args.eot_rot_deg, "trans": args.eot_trans,
+            "brightness": args.eot_bright, "contrast": args.eot_contrast,
         }
         return attack, params
     raise ValueError(f"unknown attack: {args.attack!r}")
@@ -137,7 +159,8 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--images", required=True, help="directory of images")
     r.add_argument("--ann", required=True, help="annotations JSON")
     r.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
-    r.add_argument("--attack", default="fgsm", choices=["fgsm", "patch"], help="attack to run")
+    r.add_argument("--attack", default="fgsm", choices=["fgsm", "patch", "eot-patch"],
+                   help="attack to run")
     r.add_argument("--eps", type=float, default=0.03, help="FGSM L-inf budget in [0,1]")
     r.add_argument("--patch-size", type=float, default=0.4,
                    help="patch attack: patch side as a fraction of each image dim")
@@ -146,6 +169,18 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--steps", type=int, default=20, help="patch attack: optimization steps")
     r.add_argument("--step-size", type=float, default=0.1,
                    help="patch attack: per-step size in [0,1]")
+    r.add_argument("--eot-samples", type=int, default=4,
+                   help="eot-patch: random transforms averaged per step")
+    r.add_argument("--eot-scale-min", type=float, default=0.8, help="eot-patch: min patch scale")
+    r.add_argument("--eot-scale-max", type=float, default=1.2, help="eot-patch: max patch scale")
+    r.add_argument("--eot-rot-deg", type=float, default=12.0,
+                   help="eot-patch: rotation range +/- degrees")
+    r.add_argument("--eot-trans", type=float, default=0.05,
+                   help="eot-patch: translation jitter (normalized half-image units)")
+    r.add_argument("--eot-bright", type=float, default=0.1,
+                   help="eot-patch: brightness jitter range +/-")
+    r.add_argument("--eot-contrast", type=float, default=0.2,
+                   help="eot-patch: contrast jitter range +/-")
     r.add_argument("--seed", type=int, default=0)
     r.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
     r.add_argument("--out", default="report.json", help="output JSON path")
