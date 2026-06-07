@@ -52,24 +52,32 @@ python3.11 -m venv .venv
 
 ## Run
 
-Weight-free (uses the built-in `FakeDetector`, no downloads):
+Weight-free smoke run (built-in `FakeDetector`, no downloads):
 
 ```bash
 .venv/bin/python -m proving_ground.cli run \
   --images proving_ground/data/fixtures/images \
   --ann   proving_ground/data/fixtures/annotations.json \
-  --model fake --attack fgsm --eps 0.03 --seed 0 \
-  --out report.json
+  --model fake --attack fgsm --eps 0.03 --seed 0 --out report.json
 ```
 
-Real YOLO (downloads `yolov8n.pt` on first use):
+Real YOLO (downloads `yolov8n.pt` on first use) — one command per attack:
 
 ```bash
-.venv/bin/python -m proving_ground.cli run \
-  --images proving_ground/data/fixtures/images \
-  --ann   proving_ground/data/fixtures/annotations.json \
-  --model yolov8n.pt --attack fgsm --eps 0.03 --seed 0 \
-  --out report.json
+SCENE="--images proving_ground/data/fixtures/coco_sample/images \
+       --ann proving_ground/data/fixtures/coco_sample/annotations.json \
+       --model yolov8n.pt --seed 0"
+
+# FGSM (generic gradient perturbation)
+.venv/bin/python -m proving_ground.cli run $SCENE --attack fgsm --eps 0.03 --out fgsm.json
+
+# Optimized patch (localized sticker)
+.venv/bin/python -m proving_ground.cli run $SCENE --attack patch \
+  --patch-size 0.4 --steps 20 --step-size 0.1 --out patch.json
+
+# EOT patch (robust to scale/rotation/lighting)
+.venv/bin/python -m proving_ground.cli run $SCENE --attack eot-patch \
+  --patch-size 0.4 --steps 15 --step-size 0.1 --out eot_patch.json
 ```
 
 ## Test
@@ -88,7 +96,7 @@ weights and stays fast and deterministic.
 |--------------|-------------------------------------------------------------|
 | `adapters/`  | One interface every detector plugs in behind (`Detector`, optional `WhiteBox`) |
 | `data/`      | Loaders + tiny committed fixtures                           |
-| `attacks/`   | Perturbations (FGSM today)                                  |
+| `attacks/`   | FGSM, optimized patch, EOT patch (white-box)                |
 | `eval/`      | IoU, per-class AP, mAP, robustness deltas                   |
 | `report/`    | Versioned schema + JSON generator                           |
 | `cli.py`     | Orchestrates one run end-to-end                             |
@@ -108,3 +116,15 @@ plus `class_names`. Boxes are canonical `xyxy`, absolute pixels. Gradient-based
 attacks additionally require the optional `WhiteBox` protocol
 (`to_input_tensor` + differentiable `compute_loss`), so black-box detectors
 still work for everything except white-box attacks.
+
+## Credits & licensing
+
+This project's own code is licensed under **Apache-2.0** (see `LICENSE`).
+
+All committed image fixtures are **CC0 / public domain**; per-image authors and
+sources are listed in `NOTICE` (and each fixture's `SOURCE.md`). Note that the
+default detector backend, **Ultralytics YOLO, is AGPL-3.0** — deploying this tool
+together with ultralytics subjects that combination to the AGPL; the adapter
+interface lets you swap in a differently-licensed detector. See `NOTICE` for the
+full third-party and attribution details, and `CONTRIBUTING.md` for the
+test tiers and baseline-regeneration workflow.

@@ -1,0 +1,53 @@
+Proving Ground AI — Robustness Testing Engine
+Copyright 2026 Vittesh Maganti <vittesh.ram.maganti@gmail.com>
+
+This product's own source code is licensed under the Apache License,
+Version 2.0 (see the LICENSE file).
+
+================================================================================
+Third-party dependencies (not bundled; installed via pip)
+================================================================================
+
+- Ultralytics YOLO (`ultralytics`) — AGPL-3.0-or-later.
+  https://github.com/ultralytics/ultralytics
+  IMPORTANT: ultralytics is the DEFAULT detector backend and is copyleft
+  (AGPL-3.0). This project's own code is Apache-2.0, but combining or deploying
+  it together with ultralytics subjects that combined work to the AGPL-3.0,
+  including its network-use (SaaS) obligations. The detector adapter interface
+  (proving_ground/adapters/base.py) lets you substitute a differently-licensed
+  detector if you need to avoid AGPL terms.
+
+- PyTorch (`torch`, `torchvision`) — BSD-3-Clause.
+- OpenCV (`opencv-python-headless`) — Apache-2.0.
+- NumPy (`numpy`) — BSD-3-Clause.
+
+The COCO class-name strings are used as detection labels.
+
+================================================================================
+Committed image fixtures — all CC0 1.0 (public domain)
+================================================================================
+
+Every committed fixture image is dedicated to the public domain under
+CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/).
+Attribution is not legally required but is recorded here for provenance.
+See each fixture directory's SOURCE.md for full details, retrieval date, the
+modifications made (downscale/recompress), and the annotation standard.
+
+proving_ground/data/fixtures/coco_sample/
+  images/sf_cable_car.jpg
+    "Cable Cars on California Street close to Drumm" by SaarPro
+    https://commons.wikimedia.org/wiki/File:Cable_Cars_on_California_Street_close_to_Drumm.jpg
+
+proving_ground/data/fixtures/coco_scenes/
+  images/nyc_crossing.jpg
+    "People crossing street" by Mike Petrucci
+    https://commons.wikimedia.org/wiki/File:People_crossing_street_(Unsplash).jpg
+  images/hanoi_market.jpg
+    "Street market in Hanoi, 2003 July 41" by Syced
+    https://commons.wikimedia.org/wiki/File:Street_market_in_Hanoi,_2003_July_41.jpg
+  images/bayside_bench.jpg
+    "Family sitting on bench watching bay" by D Coetzee
+    https://commons.wikimedia.org/wiki/File:Family_sitting_on_bench_watching_bay_(6968370946).jpg
+
+Ground-truth annotations were hand-drawn by visual inspection (never copied from
+any model's predictions).

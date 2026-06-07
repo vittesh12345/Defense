@@ -11,8 +11,14 @@ __pycache__/
 *.pt
 *.onnx
 
-# Generated outputs
+# Generated outputs (quickstart writes these to the repo root)
 /report*.json
+/results.json
+/fgsm.json
+/patch.json
+/eot.json
+/eot_patch.json
+build/
 
 # macOS
 .DS_Store

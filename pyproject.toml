@@ -1,12 +1,22 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "proving-ground"
 version = "0.0.1"
 description = "Robustness testing engine for object-detection models."
+readme = "README.md"
 requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Vittesh Maganti", email = "vittesh.ram.maganti@gmail.com" }]
+keywords = ["adversarial", "robustness", "object-detection", "yolo", "security"]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Science/Research",
+]
 dependencies = [
     "numpy",
     "opencv-python-headless",
