@@ -16,13 +16,28 @@ sensor and weather conditions.
 
 Pooled mAP@0.5 of `yolov8n` over a small set of cluttered, hand-annotated CC0
 street scenes (`proving_ground/data/fixtures/coco_scenes/`, clean = **0.39** — a
-believable baseline, not a toy 1.0). Every attack measurably degrades detection:
+believable baseline, not a toy 1.0). Every attack measurably degrades detection.
+
+**White-box attacks:**
 
 | Attack | Clean mAP | Attacked mAP | Δ (drop) |
 |---|---|---|---|
 | fgsm | 0.39 | 0.07 | 0.32 |
 | patch | 0.39 | 0.09 | 0.30 |
 | eot-patch | 0.39 | 0.17 | 0.22 |
+
+**Black-box degradation (DVE), at severity 0.8** — simulated sensor/weather
+conditions (locked in `tests/baselines/coco_scenes_degradation.json`, which also
+records severities 0.25 / 0.5 / 0.8 so degradation is monotonic-ish in severity):
+
+| Degradation | Clean mAP | Attacked mAP | Δ (drop) |
+|---|---|---|---|
+| motion_blur | 0.39 | 0.00 | 0.39 |
+| gaussian_noise | 0.39 | 0.02 | 0.37 |
+| low_light | 0.39 | 0.12 | 0.27 |
+| jpeg_compression | 0.39 | 0.19 | 0.20 |
+| gaussian_blur | 0.39 | 0.27 | 0.12 |
+| fog | 0.39 | 0.28 | 0.11 |
 
 The EOT patch drops less *at its clean placement* because it trades peak damage
 for **robustness under transformation** — it keeps degrading detection when the
