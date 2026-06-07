@@ -26,18 +26,28 @@ believable baseline, not a toy 1.0). Every attack measurably degrades detection.
 | patch | 0.39 | 0.09 | 0.30 |
 | eot-patch | 0.39 | 0.17 | 0.22 |
 
-**Black-box degradation (DVE), at severity 0.8** — simulated sensor/weather
-conditions (locked in `tests/baselines/coco_scenes_degradation.json`, which also
-records severities 0.25 / 0.5 / 0.8 so degradation is monotonic-ish in severity):
+**Black-box degradation (DVE) benchmark** — simulated sensor/weather conditions,
+attacked mAP@0.5 by severity (clean = **0.39**). Higher severity ⇒ more
+degradation (monotonic-ish; mild blur can even raise mAP slightly by suppressing
+spurious detections). Locked in `tests/baselines/coco_scenes_degradation.json`:
 
-| Degradation | Clean mAP | Attacked mAP | Δ (drop) |
+| Degradation mode | sev 0.25 | sev 0.50 | sev 0.80 |
 |---|---|---|---|
-| motion_blur | 0.39 | 0.00 | 0.39 |
-| gaussian_noise | 0.39 | 0.02 | 0.37 |
-| low_light | 0.39 | 0.12 | 0.27 |
-| jpeg_compression | 0.39 | 0.19 | 0.20 |
-| gaussian_blur | 0.39 | 0.27 | 0.12 |
-| fog | 0.39 | 0.28 | 0.11 |
+| motion_blur | 0.10 | 0.00 | 0.00 |
+| gaussian_noise | 0.33 | 0.07 | 0.02 |
+| low_light | 0.39 | 0.24 | 0.12 |
+| jpeg_compression | 0.39 | 0.31 | 0.19 |
+| gaussian_blur | 0.42 | 0.42 | 0.27 |
+| fog | 0.37 | 0.36 | 0.28 |
+
+Reproduce per mode, e.g.:
+
+```bash
+.venv/bin/python -m proving_ground.cli run \
+  --images proving_ground/data/fixtures/coco_scenes/images \
+  --ann   proving_ground/data/fixtures/coco_scenes/annotations.json \
+  --model yolov8n.pt --attack degradation --mode fog --severity 0.8 --out fog.json
+```
 
 The EOT patch drops less *at its clean placement* because it trades peak damage
 for **robustness under transformation** — it keeps degrading detection when the
