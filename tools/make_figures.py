@@ -43,6 +43,8 @@ SPECS = [
                     brightness=0.1, contrast=0.2, seed=0), "eot-patch", "hanoi_market.jpg"),
     (DegradationAttack(mode="low_light", severity=0.8, seed=0),
      "low_light", "nyc_crossing.jpg"),
+    (DegradationAttack(mode="fog", severity=0.8, seed=0),
+     "fog", "nyc_crossing.jpg"),
 ]
 
 
