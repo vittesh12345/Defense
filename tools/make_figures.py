@@ -17,6 +17,7 @@ import cv2
 import numpy as np
 
 from proving_ground.adapters.yolo import UltralyticsYOLOAdapter
+from proving_ground.attacks.degradation import DegradationAttack
 from proving_ground.attacks.eot_patch import EOTPatchAttack
 from proving_ground.attacks.fgsm import FGSM
 from proving_ground.attacks.patch import PatchAttack
@@ -40,6 +41,8 @@ SPECS = [
     (EOTPatchAttack(size=0.4, location="center", steps=15, step_size=0.1, eot_samples=4,
                     scale_min=0.8, scale_max=1.2, rot_deg=12.0, trans=0.05,
                     brightness=0.1, contrast=0.2, seed=0), "eot-patch", "hanoi_market.jpg"),
+    (DegradationAttack(mode="low_light", severity=0.8, seed=0),
+     "low_light", "nyc_crossing.jpg"),
 ]
 
 
