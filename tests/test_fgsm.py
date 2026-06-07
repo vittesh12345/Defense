@@ -10,39 +10,11 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-import torch
+from _fakes import BlackBoxOnly, DummyWhiteBox
 
 from proving_ground.adapters.base import Detection, WhiteBox
 from proving_ground.attacks.base import image_to_tensor
 from proving_ground.attacks.fgsm import FGSM
-
-
-class BlackBoxOnly:
-    """A detector that does NOT implement WhiteBox."""
-
-    class_names = ["red"]
-
-    def predict(self, image):
-        return []
-
-
-class DummyWhiteBox:
-    """Differentiable toy detector. Loss = mean of a fixed linear projection."""
-
-    class_names = ["red", "green", "blue"]
-
-    def __init__(self) -> None:
-        # Fixed (seed-independent) weights so the gradient sign is determinate.
-        self._w = torch.linspace(-1.0, 1.0, steps=3).reshape(1, 3, 1, 1)
-
-    def to_input_tensor(self, image: np.ndarray) -> torch.Tensor:
-        return image_to_tensor(image)
-
-    def compute_loss(self, image_tensor: torch.Tensor, targets) -> torch.Tensor:
-        return (image_tensor * self._w).mean()
-
-    def predict(self, image):  # not used by FGSM, present for completeness
-        return []
 
 
 @pytest.fixture

@@ -19,7 +19,9 @@ from datetime import UTC, datetime
 
 from proving_ground.adapters.base import Detection, Detector
 from proving_ground.adapters.fake import FakeDetector
+from proving_ground.attacks.base import Attack
 from proving_ground.attacks.fgsm import FGSM
+from proving_ground.attacks.patch import PatchAttack
 from proving_ground.data.loaders import Sample, load_dataset
 from proving_ground.eval.metrics import mean_average_precision, per_class_ap
 from proving_ground.eval.robustness import robustness_delta
@@ -43,6 +45,41 @@ def _predict_all(detector: Detector, samples: list[Sample]) -> list[list[Detecti
     return [detector.predict(s.image) for s in samples]
 
 
+def _parse_loc(loc: str) -> str | tuple[float, float]:
+    if loc == "center":
+        return "center"
+    try:
+        fx, fy = (float(v) for v in loc.split(","))
+    except ValueError as e:
+        raise ValueError(f"--patch-loc must be 'center' or 'fx,fy'; got {loc!r}") from e
+    return (fx, fy)
+
+
+def _build_attack(args: argparse.Namespace) -> tuple[Attack, dict[str, float]]:
+    """Return (attack, numeric params for the report)."""
+    if args.attack == "fgsm":
+        return FGSM(eps=args.eps), {"eps": args.eps}
+    if args.attack == "patch":
+        loc = _parse_loc(args.patch_loc)
+        attack = PatchAttack(
+            size=args.patch_size, location=loc, steps=args.steps, step_size=args.step_size
+        )
+        # Record resolved top-left fractions so the run is fully described.
+        if loc == "center":
+            loc_x = loc_y = (1.0 - args.patch_size) / 2.0
+        else:
+            loc_x, loc_y = loc
+        params = {
+            "patch_size": args.patch_size,
+            "loc_x": loc_x,
+            "loc_y": loc_y,
+            "steps": float(args.steps),
+            "step_size": args.step_size,
+        }
+        return attack, params
+    raise ValueError(f"unknown attack: {args.attack!r}")
+
+
 def run(args: argparse.Namespace) -> int:
     set_seed(args.seed)
 
@@ -56,7 +93,7 @@ def run(args: argparse.Namespace) -> int:
     clean_pc = per_class_ap(clean_preds, gts, classes, args.iou)
 
     # One attack, then re-evaluate on the perturbed images.
-    attack = FGSM(eps=args.eps)
+    attack, attack_params = _build_attack(args)
     attacked_images = [
         attack.apply(detector, s.image, s.ground_truth) for s in samples
     ]
@@ -80,7 +117,7 @@ def run(args: argparse.Namespace) -> int:
         clean_map=clean_map,
         clean_per_class=clean_pc,
         attack_name=attack.name,
-        attack_params={"eps": args.eps},
+        attack_params=attack_params,
         robustness=rob,
         timestamp_utc=datetime.now(UTC).isoformat(),
     )
@@ -100,8 +137,15 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--images", required=True, help="directory of images")
     r.add_argument("--ann", required=True, help="annotations JSON")
     r.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
-    r.add_argument("--attack", default="fgsm", choices=["fgsm"], help="attack to run")
+    r.add_argument("--attack", default="fgsm", choices=["fgsm", "patch"], help="attack to run")
     r.add_argument("--eps", type=float, default=0.03, help="FGSM L-inf budget in [0,1]")
+    r.add_argument("--patch-size", type=float, default=0.4,
+                   help="patch attack: patch side as a fraction of each image dim")
+    r.add_argument("--patch-loc", default="center",
+                   help="patch attack: 'center' or top-left fractions 'fx,fy'")
+    r.add_argument("--steps", type=int, default=20, help="patch attack: optimization steps")
+    r.add_argument("--step-size", type=float, default=0.1,
+                   help="patch attack: per-step size in [0,1]")
     r.add_argument("--seed", type=int, default=0)
     r.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
     r.add_argument("--out", default="report.json", help="output JSON path")

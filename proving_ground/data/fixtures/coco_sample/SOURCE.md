@@ -21,17 +21,29 @@ the 80 COCO class names (so they line up with what `UltralyticsYOLOAdapter`
 returns): `person` = 0, `train` = 6 (the string of cable cars is annotated as a
 single `train`).
 
-## Regenerating the golden baseline
+## Regenerating the golden baselines
 
-`tests/baselines/coco_sample_report.json` is the locked snapshot of the real
-clean→attacked measurement on this fixture. It must only change as a deliberate,
-reviewed baseline update. To regenerate after an intentional change:
+Two locked snapshots of the real clean→attacked measurement on this fixture:
+
+- `tests/baselines/coco_sample_report.json` — FGSM attack
+- `tests/baselines/coco_sample_patch_report.json` — adversarial patch attack
+
+They must only change as a deliberate, reviewed baseline update. To regenerate
+after an intentional change:
 
 ```bash
+# FGSM
 .venv/bin/python -m proving_ground.cli run \
   --images proving_ground/data/fixtures/coco_sample/images \
   --ann   proving_ground/data/fixtures/coco_sample/annotations.json \
-  --model yolov8n.pt --eps 0.03 --seed 0 --out /tmp/new.json
-# then normalise (drop timestamp + filesystem paths) and overwrite the baseline:
-.venv/bin/python tests/baselines/_regen.py /tmp/new.json
+  --model yolov8n.pt --attack fgsm --eps 0.03 --seed 0 --out /tmp/new.json
+.venv/bin/python tests/baselines/_regen.py /tmp/new.json coco_sample_report.json
+
+# Patch
+.venv/bin/python -m proving_ground.cli run \
+  --images proving_ground/data/fixtures/coco_sample/images \
+  --ann   proving_ground/data/fixtures/coco_sample/annotations.json \
+  --model yolov8n.pt --attack patch --patch-size 0.4 --steps 20 --step-size 0.1 \
+  --seed 0 --out /tmp/new.json
+.venv/bin/python tests/baselines/_regen.py /tmp/new.json coco_sample_patch_report.json
 ```
