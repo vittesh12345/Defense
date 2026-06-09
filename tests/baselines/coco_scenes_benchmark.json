@@ -34,6 +34,54 @@
         "steps": 15.0,
         "trans": 0.05
       }
+    },
+    {
+      "attacked_map": 0.27299667924667925,
+      "map_delta": 0.11682322307322313,
+      "name": "degradation-gaussian_blur",
+      "params": {
+        "severity": 0.8
+      }
+    },
+    {
+      "attacked_map": 0.0,
+      "map_delta": 0.3898199023199024,
+      "name": "degradation-motion_blur",
+      "params": {
+        "severity": 0.8
+      }
+    },
+    {
+      "attacked_map": 0.018518518518518517,
+      "map_delta": 0.3713013838013839,
+      "name": "degradation-gaussian_noise",
+      "params": {
+        "severity": 0.8
+      }
+    },
+    {
+      "attacked_map": 0.2839031339031339,
+      "map_delta": 0.1059167684167685,
+      "name": "degradation-fog",
+      "params": {
+        "severity": 0.8
+      }
+    },
+    {
+      "attacked_map": 0.12248175105317961,
+      "map_delta": 0.2673381512667228,
+      "name": "degradation-low_light",
+      "params": {
+        "severity": 0.8
+      }
+    },
+    {
+      "attacked_map": 0.18919753086419752,
+      "map_delta": 0.20062237145570486,
+      "name": "degradation-jpeg_compression",
+      "params": {
+        "severity": 0.8
+      }
     }
   ],
   "clean_map": 0.3898199023199024,

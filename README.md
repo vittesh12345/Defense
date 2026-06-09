@@ -51,7 +51,8 @@ spurious detections). Locked in `tests/baselines/coco_scenes_degradation.json`:
 | gaussian_blur | 0.42 | 0.42 | 0.27 |
 | fog | 0.37 | 0.36 | 0.28 |
 
-Reproduce per mode, e.g.:
+Reproduce a single mode at a chosen severity (used for the severity sweep
+above), e.g.:
 
 ```bash
 .venv/bin/python -m proving_ground.cli run \
@@ -63,8 +64,9 @@ Reproduce per mode, e.g.:
 The EOT patch drops less *at its clean placement* because it trades peak damage
 for **robustness under transformation** — it keeps degrading detection when the
 patch is re-rendered at scales/rotations held out from training (see
-`tests/test_eot_patch_snapshot.py`). These numbers are locked as a regression
-baseline (`tests/baselines/coco_scenes_benchmark.json`); reproduce them with:
+`tests/test_eot_patch_snapshot.py`). The headline white-box + DVE drop tables
+(both at their locked severity) are produced together by `bench` and locked in
+`tests/baselines/coco_scenes_benchmark.json`; reproduce them with:
 
 ```bash
 .venv/bin/python -m proving_ground.cli bench \
@@ -142,7 +144,7 @@ weights and stays fast and deterministic.
 |--------------|-------------------------------------------------------------|
 | `adapters/`  | One interface every detector plugs in behind (`Detector`, optional `WhiteBox`) |
 | `data/`      | Loaders + tiny committed fixtures                           |
-| `attacks/`   | FGSM, optimized patch, EOT patch (white-box)                |
+| `attacks/`   | FGSM, optimized patch, EOT patch (white-box); DVE degradation (black-box) |
 | `eval/`      | IoU, per-class AP, mAP, robustness deltas                   |
 | `report/`    | Versioned schema + JSON generator                           |
 | `cli.py`     | Orchestrates one run end-to-end                             |

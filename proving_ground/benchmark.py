@@ -12,6 +12,8 @@ from collections.abc import Sequence
 
 from proving_ground.adapters.base import Detector
 from proving_ground.attacks.base import Attack
+from proving_ground.attacks.degradation import MODES as DEGRADATION_MODES
+from proving_ground.attacks.degradation import DegradationAttack
 from proving_ground.attacks.eot_patch import EOTPatchAttack
 from proving_ground.attacks.fgsm import FGSM
 from proving_ground.attacks.patch import PatchAttack
@@ -19,10 +21,18 @@ from proving_ground.data.loaders import Sample
 from proving_ground.eval.metrics import mean_average_precision
 from proving_ground.seeding import set_seed
 
+# Severity used for the DVE entries in the canonical suite — matches the README
+# headline drop table and the high-severity row of the degradation snapshot.
+DVE_SEVERITY = 0.8
+
 
 def default_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
-    """The canonical attack suite (params kept in sync with the locked baselines)."""
-    return [
+    """The canonical attack suite (params kept in sync with the locked baselines).
+
+    White-box attacks first, then the six DVE degradations at severity 0.8 —
+    one ``bench`` invocation now produces the full README headline.
+    """
+    suite: list[tuple[Attack, dict[str, float]]] = [
         (FGSM(eps=0.03), {"eps": 0.03}),
         (PatchAttack(size=0.4, location="center", steps=20, step_size=0.1),
          {"patch_size": 0.4, "steps": 20.0, "step_size": 0.1}),
@@ -33,6 +43,12 @@ def default_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
           "scale_min": 0.8, "scale_max": 1.2, "rot_deg": 12.0, "trans": 0.05,
           "brightness": 0.1, "contrast": 0.2}),
     ]
+    for mode in DEGRADATION_MODES:
+        suite.append((
+            DegradationAttack(mode=mode, severity=DVE_SEVERITY, seed=seed),
+            {"severity": DVE_SEVERITY},
+        ))
+    return suite
 
 
 def run_benchmark(
