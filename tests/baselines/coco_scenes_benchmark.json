@@ -20,6 +20,17 @@
       }
     },
     {
+      "attacked_map": 0.0012282690854119424,
+      "map_delta": 0.3885916332344904,
+      "name": "pgd-l2",
+      "params": {
+        "eps": 3.0,
+        "random_init": 0.0,
+        "step_size": 0.75,
+        "steps": 10.0
+      }
+    },
+    {
       "attacked_map": 0.09117535903250189,
       "map_delta": 0.2986445432874005,
       "name": "patch",

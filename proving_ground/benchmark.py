@@ -18,6 +18,7 @@ from proving_ground.attacks.eot_patch import EOTPatchAttack
 from proving_ground.attacks.fgsm import FGSM
 from proving_ground.attacks.patch import PatchAttack
 from proving_ground.attacks.pgd import PGDLinf
+from proving_ground.attacks.pgd_l2 import PGDL2
 from proving_ground.data.loaders import Sample
 from proving_ground.eval.metrics import mean_average_precision
 from proving_ground.seeding import set_seed
@@ -37,6 +38,8 @@ def default_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
         (FGSM(eps=0.03), {"eps": 0.03}),
         (PGDLinf(eps=0.03, steps=10, step_size=0.0075),
          {"eps": 0.03, "steps": 10.0, "step_size": 0.0075, "random_init": 0.0}),
+        (PGDL2(eps=3.0, steps=10, step_size=0.75),
+         {"eps": 3.0, "steps": 10.0, "step_size": 0.75, "random_init": 0.0}),
         (PatchAttack(size=0.4, location="center", steps=20, step_size=0.1),
          {"patch_size": 0.4, "steps": 20.0, "step_size": 0.1}),
         (EOTPatchAttack(size=0.4, location="center", steps=15, step_size=0.1, eot_samples=4,

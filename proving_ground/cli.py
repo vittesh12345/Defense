@@ -26,6 +26,7 @@ from proving_ground.attacks.eot_patch import EOTPatchAttack
 from proving_ground.attacks.fgsm import FGSM
 from proving_ground.attacks.patch import PatchAttack
 from proving_ground.attacks.pgd import PGDLinf
+from proving_ground.attacks.pgd_l2 import PGDL2
 from proving_ground.data.loaders import Sample, load_dataset
 from proving_ground.eval.metrics import mean_average_precision, per_class_ap
 from proving_ground.eval.robustness import robustness_delta
@@ -76,6 +77,21 @@ def _build_attack(args: argparse.Namespace) -> tuple[Attack, dict[str, float]]:
             "steps": float(args.pgd_steps),
             "step_size": args.pgd_step_size,
             "random_init": float(args.pgd_random_init),
+        }
+        return attack, params
+    if args.attack == "pgd-l2":
+        attack = PGDL2(
+            eps=args.pgd_l2_eps,
+            steps=args.pgd_l2_steps,
+            step_size=args.pgd_l2_step_size,
+            random_init=args.pgd_l2_random_init,
+            seed=args.seed,
+        )
+        params = {
+            "eps": args.pgd_l2_eps,
+            "steps": float(args.pgd_l2_steps),
+            "step_size": args.pgd_l2_step_size,
+            "random_init": float(args.pgd_l2_random_init),
         }
         return attack, params
     if args.attack == "patch":
@@ -203,7 +219,7 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--ann", required=True, help="annotations JSON")
     r.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
     r.add_argument("--attack", default="fgsm",
-                   choices=["fgsm", "pgd-linf", "patch", "eot-patch", "degradation"],
+                   choices=["fgsm", "pgd-linf", "pgd-l2", "patch", "eot-patch", "degradation"],
                    help="attack to run")
     r.add_argument("--mode", default="gaussian_blur", choices=list(DEGRADATION_MODES),
                    help="degradation: which degradation mode")
@@ -217,6 +233,14 @@ def build_parser() -> argparse.ArgumentParser:
                    help="pgd-linf: per-step size in [0,1]")
     r.add_argument("--pgd-random-init", action="store_true",
                    help="pgd-linf: start from a uniform point inside the eps-ball")
+    r.add_argument("--pgd-l2-eps", type=float, default=3.0,
+                   help="pgd-l2: L2 budget for the whole perturbation tensor")
+    r.add_argument("--pgd-l2-steps", type=int, default=10,
+                   help="pgd-l2: number of unit-norm gradient steps")
+    r.add_argument("--pgd-l2-step-size", type=float, default=0.75,
+                   help="pgd-l2: per-step L2 size (literature rule: 2.5 * eps / steps)")
+    r.add_argument("--pgd-l2-random-init", action="store_true",
+                   help="pgd-l2: start from a uniform point inside the L2 eps-ball")
     r.add_argument("--patch-size", type=float, default=0.4,
                    help="patch attack: patch side as a fraction of each image dim")
     r.add_argument("--patch-loc", default="center",
