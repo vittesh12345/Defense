@@ -5,12 +5,13 @@ degradations, measures the failure, and emits a reproducible JSON assurance
 report. The output is **measurement** — correctness and reproducibility beat
 speed.
 
-It ships several attacks — white-box **FGSM** (generic gradient), an **optimized
-patch**, and an **EOT patch** (Expectation Over Transformation: a localized patch
-trained to survive being printed and re-photographed at different scales, angles,
-and lighting), plus a black-box **degradation** family (DVE: gaussian/motion
-blur, gaussian noise, fog, low light, JPEG compression) that simulates real
-sensor and weather conditions.
+It ships several attacks — white-box **FGSM** (single-step generic gradient),
+**PGD-Linf** (the standard iterative FGSM at the same L-inf budget — strictly
+stronger), an **optimized patch**, and an **EOT patch** (Expectation Over
+Transformation: a localized patch trained to survive being printed and
+re-photographed at different scales, angles, and lighting), plus a black-box
+**degradation** family (DVE: gaussian/motion blur, gaussian noise, fog, low
+light, JPEG compression) that simulates real sensor and weather conditions.
 
 ## Results
 
@@ -23,6 +24,7 @@ believable baseline, not a toy 1.0). Every attack measurably degrades detection.
 | Attack | Clean mAP | Attacked mAP | Δ (drop) |
 |---|---|---|---|
 | fgsm | 0.39 | 0.07 | 0.32 |
+| pgd-linf | 0.39 | 0.00 | 0.39 |
 | patch | 0.39 | 0.09 | 0.30 |
 | eot-patch | 0.39 | 0.17 | 0.22 |
 
@@ -111,8 +113,12 @@ SCENE="--images proving_ground/data/fixtures/coco_sample/images \
        --ann proving_ground/data/fixtures/coco_sample/annotations.json \
        --model yolov8n.pt --seed 0"
 
-# FGSM (generic gradient perturbation)
+# FGSM (single-step generic gradient perturbation)
 .venv/bin/python -m proving_ground.cli run $SCENE --attack fgsm --eps 0.03 --out fgsm.json
+
+# PGD-Linf (iterative FGSM at the same eps budget — strictly stronger)
+.venv/bin/python -m proving_ground.cli run $SCENE --attack pgd-linf \
+  --eps 0.03 --pgd-steps 10 --pgd-step-size 0.0075 --out pgd_linf.json
 
 # Optimized patch (localized sticker)
 .venv/bin/python -m proving_ground.cli run $SCENE --attack patch \
@@ -144,7 +150,7 @@ weights and stays fast and deterministic.
 |--------------|-------------------------------------------------------------|
 | `adapters/`  | One interface every detector plugs in behind (`Detector`, optional `WhiteBox`) |
 | `data/`      | Loaders + tiny committed fixtures                           |
-| `attacks/`   | FGSM, optimized patch, EOT patch (white-box); DVE degradation (black-box) |
+| `attacks/`   | FGSM, PGD-Linf, optimized patch, EOT patch (white-box); DVE degradation (black-box) |
 | `eval/`      | IoU, per-class AP, mAP, robustness deltas                   |
 | `report/`    | Versioned schema + JSON generator                           |
 | `cli.py`     | Orchestrates one run end-to-end                             |

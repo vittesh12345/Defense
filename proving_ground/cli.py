@@ -25,6 +25,7 @@ from proving_ground.attacks.degradation import DegradationAttack
 from proving_ground.attacks.eot_patch import EOTPatchAttack
 from proving_ground.attacks.fgsm import FGSM
 from proving_ground.attacks.patch import PatchAttack
+from proving_ground.attacks.pgd import PGDLinf
 from proving_ground.data.loaders import Sample, load_dataset
 from proving_ground.eval.metrics import mean_average_precision, per_class_ap
 from proving_ground.eval.robustness import robustness_delta
@@ -62,6 +63,21 @@ def _build_attack(args: argparse.Namespace) -> tuple[Attack, dict[str, float]]:
     """Return (attack, numeric params for the report)."""
     if args.attack == "fgsm":
         return FGSM(eps=args.eps), {"eps": args.eps}
+    if args.attack == "pgd-linf":
+        attack = PGDLinf(
+            eps=args.eps,
+            steps=args.pgd_steps,
+            step_size=args.pgd_step_size,
+            random_init=args.pgd_random_init,
+            seed=args.seed,
+        )
+        params = {
+            "eps": args.eps,
+            "steps": float(args.pgd_steps),
+            "step_size": args.pgd_step_size,
+            "random_init": float(args.pgd_random_init),
+        }
+        return attack, params
     if args.attack == "patch":
         loc = _parse_loc(args.patch_loc)
         attack = PatchAttack(
@@ -187,12 +203,20 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--ann", required=True, help="annotations JSON")
     r.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
     r.add_argument("--attack", default="fgsm",
-                   choices=["fgsm", "patch", "eot-patch", "degradation"], help="attack to run")
+                   choices=["fgsm", "pgd-linf", "patch", "eot-patch", "degradation"],
+                   help="attack to run")
     r.add_argument("--mode", default="gaussian_blur", choices=list(DEGRADATION_MODES),
                    help="degradation: which degradation mode")
     r.add_argument("--severity", type=float, default=0.5,
                    help="degradation: severity in [0,1] (0=identity)")
-    r.add_argument("--eps", type=float, default=0.03, help="FGSM L-inf budget in [0,1]")
+    r.add_argument("--eps", type=float, default=0.03,
+                   help="FGSM / PGD-Linf L-inf budget in [0,1]")
+    r.add_argument("--pgd-steps", type=int, default=10,
+                   help="pgd-linf: number of gradient-sign steps")
+    r.add_argument("--pgd-step-size", type=float, default=0.0075,
+                   help="pgd-linf: per-step size in [0,1]")
+    r.add_argument("--pgd-random-init", action="store_true",
+                   help="pgd-linf: start from a uniform point inside the eps-ball")
     r.add_argument("--patch-size", type=float, default=0.4,
                    help="patch attack: patch side as a fraction of each image dim")
     r.add_argument("--patch-loc", default="center",

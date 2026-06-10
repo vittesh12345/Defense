@@ -41,6 +41,29 @@ def test_cli_run_produces_valid_report(fixtures_dir, tmp_path):
     assert attack["map_delta"] == report["clean_map"] - attack["attacked_map"]
 
 
+def test_cli_run_with_pgd_linf(fixtures_dir, tmp_path):
+    out = tmp_path / "report.json"
+    rc = main([
+        "run",
+        "--images", str(fixtures_dir / "images"),
+        "--ann", str(fixtures_dir / "annotations.json"),
+        "--model", "fake",
+        "--attack", "pgd-linf",
+        "--eps", "0.05",
+        "--pgd-steps", "3",
+        "--pgd-step-size", "0.02",
+        "--seed", "0",
+        "--out", str(out),
+    ])
+    assert rc == 0
+    report = json.loads(out.read_text())
+    attack = report["attacks"][0]
+    assert attack["name"] == "pgd-linf"
+    assert attack["params"]["eps"] == 0.05
+    assert attack["params"]["steps"] == 3.0
+    assert attack["map_delta"] == report["clean_map"] - attack["attacked_map"]
+
+
 def test_cli_run_is_reproducible(fixtures_dir, tmp_path):
     def run_once(path):
         main([
@@ -79,7 +102,10 @@ def test_cli_bench_runs_full_canonical_suite(fixtures_dir, tmp_path):
     assert 0.0 <= results["clean_map"] <= 1.0
 
     names = [a["name"] for a in results["attacks"]]
-    expected = ["fgsm", "patch", "eot-patch"] + [f"degradation-{m}" for m in DEGRADATION_MODES]
+    expected = (
+        ["fgsm", "pgd-linf", "patch", "eot-patch"]
+        + [f"degradation-{m}" for m in DEGRADATION_MODES]
+    )
     assert names == expected
 
     for a in results["attacks"]:

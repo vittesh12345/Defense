@@ -9,6 +9,17 @@
       }
     },
     {
+      "attacked_map": 0.00033068783068783067,
+      "map_delta": 0.38948921448921453,
+      "name": "pgd-linf",
+      "params": {
+        "eps": 0.03,
+        "random_init": 0.0,
+        "step_size": 0.0075,
+        "steps": 10.0
+      }
+    },
+    {
       "attacked_map": 0.09117535903250189,
       "map_delta": 0.2986445432874005,
       "name": "patch",
