@@ -2,6 +2,39 @@
 
 _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 
+## Changelog
+
+Reverse-chronological log of changes we make; trim oldest entries to keep this
+file under 250 lines.
+
+- **2026-06-11** — Added `UltralyticsOBBAdapter` (black-box; predict only) so the
+  engine can run aerial-trained DOTA-OBB models (oriented boxes -> axis-aligned
+  `xyxy`); CLI routes `--model *obb*` to it; unit + integration tests. **Aerial
+  benchmark shelved** — see the aerial finding below.
+- **2026-06-11** — Added DVE demo figures (low-light, fog, and a combined
+  fog-vs-low-light composite) and referenced them in the README; added the
+  README DVE drop table (severity 0.8) and the full severity-sweep grid;
+  installed the `karpathy-guidelines` project skill; pulled the PGD-Linf /
+  PGD-L2 white-box suite and the full-canonical `bench` into `main`.
+
+### Finding: aerial / overhead wedge is detector- and metric-blocked
+
+Attempted the drone/satellite wedge and hit hard limits, evidenced:
+- COCO-pretrained `yolov8n` is out-of-distribution for overhead views — it
+  localizes aerial cars (IoU up to 0.86) but **mislabels them as `boat`**, so
+  car-mAP@0.5 = 0 (nothing for attacks to degrade).
+- DOTA-trained `yolov8n-obb` detects aerial vehicles but **only on true nadir**
+  imagery (71 `small vehicle` on a nadir lot; 0 on oblique drone shots).
+- Freely-sourceable CC0/CC-BY nadir imagery is **dense small-vehicle lots**;
+  large IoU-stable DOTA classes (ship/plane/large-vehicle) only appear in
+  *oblique* Commons aerials, where DOTA detects nothing.
+- On a nadir lot, mAP@0.5 on ~30-45 px cars is **too fragile** (box error drops
+  IoU < 0.5) — clean mAP ~0.06 and degradations bounce *above* it. Not credible.
+
+Shipped the working OBB adapter; **deferred**: white-box OBB `compute_loss` (for
+FGSM/PGD/patch/EOT on aerial), a credible nadir large-object fixture (needs a
+licensed DOTA/xView sample or lower IoU threshold), and the aerial benchmark.
+
 ## 1. Product Vision
 
 Independent assurance layer for physical military AI: stress-tests perception /

@@ -39,6 +39,10 @@ def _build_detector(model: str) -> tuple[Detector, str]:
     """Return (detector, model_label). 'fake' is weight-free; '*.pt' loads YOLO."""
     if model == "fake":
         return FakeDetector(), "fake"
+    if "obb" in model:
+        from proving_ground.adapters.yolo_obb import UltralyticsOBBAdapter
+
+        return UltralyticsOBBAdapter(model), model
     if model.endswith(".pt") or model.startswith("yolo"):
         from proving_ground.adapters.yolo import UltralyticsYOLOAdapter
 
