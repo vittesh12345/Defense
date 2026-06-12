@@ -7,6 +7,13 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-12** — Added confidence intervals (`proving_ground/stats.py`,
+  `bench --seeds K`): a **seed sweep** (attack-randomness CI; deterministic
+  attacks show zero width, EOT/noise/low-light get real intervals) and an
+  **image bootstrap** (1000 resamples; error bars for every attack, surfacing
+  the wide small-fixture uncertainty — clean 0.39, bootstrap 95% CI
+  [0.125, 0.460]). Locked golden + integration/fast tests + README table. The
+  single-seed `bench` and its baseline are unchanged.
 - **2026-06-12** — Re-locked the two drifted baselines on PyTorch 2.12
   (`coco_sample_pgd_linf_report.json`, `coco_scenes_benchmark.json` — benign PGD
   float drift: near-zero `attacked_map` and which incidental FP classes appear).
@@ -184,8 +191,9 @@ larger spec capability:
 **Engineering risks**
 - AGPL exposure: the default backend taints any combined deployment, blocking
   paid pilots without a swap.
-- Single-seed point estimates with no confidence intervals — easy to challenge
-  externally.
+- ~~Single-seed point estimates with no confidence intervals.~~ Addressed for
+  the benchmark via `bench --seeds K` (seed sweep + image bootstrap); the wide
+  bootstrap CIs now make the small-fixture uncertainty explicit rather than hidden.
 - Fixture sets (1 + 3 images) are too small to call a "benchmark" publicly.
 - No auth, sandboxing, or report signing on the CLI — blockers for the
   certifying-authority use case.

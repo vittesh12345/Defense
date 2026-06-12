@@ -193,22 +193,38 @@ def run(args: argparse.Namespace) -> int:
 
 
 def bench(args: argparse.Namespace) -> int:
-    """Run the canonical attack suite over an image set; emit a results table."""
-    import json
+    """Run the canonical attack suite over an image set; emit a results table.
 
-    from proving_ground.benchmark import default_attacks, results_table, run_benchmark
+    ``--seeds 1`` (default) is the single-seed point estimate. ``--seeds K`` with
+    K > 1 instead emits confidence intervals (seed sweep + image bootstrap).
+    """
+    import json
+    from pathlib import Path
 
     set_seed(args.seed)
     samples, classes = load_dataset(args.images, args.ann)
     detector, _ = _build_detector(args.model)
-    results = run_benchmark(
-        detector, samples, classes, default_attacks(seed=args.seed),
-        iou_threshold=args.iou, seed=args.seed,
-    )
+
+    if args.seeds > 1:
+        from proving_ground.stats import ci_table, compute_ci
+
+        results = compute_ci(
+            detector, samples, classes, n_seeds=args.seeds,
+            n_bootstrap=args.bootstrap, base_seed=args.seed, iou_threshold=args.iou,
+        )
+        table = ci_table(results)
+    else:
+        from proving_ground.benchmark import default_attacks, results_table, run_benchmark
+
+        results = run_benchmark(
+            detector, samples, classes, default_attacks(seed=args.seed),
+            iou_threshold=args.iou, seed=args.seed,
+        )
+        table = results_table(results)
+
     if args.out:
-        from pathlib import Path
         Path(args.out).write_text(json.dumps(results, indent=2, sort_keys=True) + "\n")
-    print(results_table(results))
+    print(table)
     if args.out:
         print(f"\nresults written: {args.out}")
     return 0
@@ -274,6 +290,10 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--ann", required=True, help="annotations JSON")
     b.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
     b.add_argument("--seed", type=int, default=0)
+    b.add_argument("--seeds", type=int, default=1,
+                   help="number of seeds; >1 emits confidence intervals (seed sweep + bootstrap)")
+    b.add_argument("--bootstrap", type=int, default=1000,
+                   help="image-bootstrap resamples (CI mode only)")
     b.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
     b.add_argument("--out", default=None, help="optional results JSON path")
     b.set_defaults(func=bench)
