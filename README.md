@@ -1,5 +1,7 @@
 # Proving Ground AI — Robustness Testing Engine
 
+[![CI](https://github.com/vittesh12345/Defense/actions/workflows/ci.yml/badge.svg)](https://github.com/vittesh12345/Defense/actions/workflows/ci.yml)
+
 Stress-tests object-detection models (YOLO, etc.) with adversarial attacks and
 degradations, measures the failure, and emits a reproducible JSON assurance
 report. The output is **measurement** — correctness and reproducibility beat

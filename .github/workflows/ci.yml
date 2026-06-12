@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# The fast tier only: it is weight-free and deterministic, so it runs cleanly on
+# Linux CI. The integration tier is intentionally NOT run here — it downloads
+# model weights and asserts byte/1e-4 reproducibility against baselines locked on
+# a specific machine, which is not portable across CI architectures. Run it
+# locally (`pytest -m integration`) before re-locking baselines.
+jobs:
+  fast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check proving_ground tests tools
+      - name: Fast tests (no weights)
+        run: pytest -q

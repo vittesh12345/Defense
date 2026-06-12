@@ -7,6 +7,9 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-12** — Added GitHub Actions CI (`.github/workflows/ci.yml`): ruff +
+  fast tier (weight-free) on push/PR; integration tier stays local (not portable
+  across CI architectures). README CI badge. Addresses the "no CI committed" risk.
 - **2026-06-12** — Added confidence intervals (`proving_ground/stats.py`,
   `bench --seeds K`): a **seed sweep** (attack-randomness CI; deterministic
   attacks show zero width, EOT/noise/low-light get real intervals) and an
@@ -197,7 +200,8 @@ larger spec capability:
 - Fixture sets (1 + 3 images) are too small to call a "benchmark" publicly.
 - No auth, sandboxing, or report signing on the CLI — blockers for the
   certifying-authority use case.
-- No CI committed; two-tier test discipline lives only in `CONTRIBUTING.md`.
+- ~~No CI committed.~~ GitHub Actions runs ruff + the fast tier on push/PR; the
+  integration tier still runs locally only (baselines aren't CI-portable).
 - Snapshot byte-identity holds on CPU but will be fragile across GPU/driver
   upgrades.
 
