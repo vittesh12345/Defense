@@ -9,8 +9,8 @@
       }
     },
     {
-      "attacked_map": 0.00033068783068783067,
-      "map_delta": 0.38948921448921453,
+      "attacked_map": 0.0,
+      "map_delta": 0.3898199023199024,
       "name": "pgd-linf",
       "params": {
         "eps": 0.03,
@@ -20,8 +20,8 @@
       }
     },
     {
-      "attacked_map": 0.0012282690854119424,
-      "map_delta": 0.3885916332344904,
+      "attacked_map": 0.0015873015873015873,
+      "map_delta": 0.3882326007326008,
       "name": "pgd-l2",
       "params": {
         "eps": 3.0,

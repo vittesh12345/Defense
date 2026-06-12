@@ -7,6 +7,11 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-12** — Re-locked the two drifted baselines on PyTorch 2.12
+  (`coco_sample_pgd_linf_report.json`, `coco_scenes_benchmark.json` — benign PGD
+  float drift: near-zero `attacked_map` and which incidental FP classes appear).
+  `pytest -m integration` is **green again** (31 passed). Updated Claude Code CLI
+  2.1.169 -> 2.1.174.
 - **2026-06-11** — Added `UltralyticsOBBAdapter` (black-box; predict only) so the
   engine can run aerial-trained DOTA-OBB models (oriented boxes -> axis-aligned
   `xyxy`); CLI routes `--model *obb*` to it; unit + integration tests. **Aerial
@@ -128,11 +133,11 @@ larger spec capability:
 5. Promote the DVE severity sweep into a first-class `bench` mode (currently
    hard-coded to severity 0.8) so the full severity grid is reproducible
    without per-mode `run` invocations _(module #1)_.
-6. Regenerate the patch / EOT-patch locked baselines on the current PyTorch
-   version — drift is now manifest (`test_patch_snapshot` and
-   `test_benchmark_snapshot` fail at the 1e-4 tolerance on the current
-   PyTorch 2.12 venv); a deliberate re-lock is needed to restore the green
-   integration tier _(engineering risk)_.
+6. ~~Re-lock baselines drifting on PyTorch 2.12.~~ **Done (2026-06-12):**
+   re-locked `coco_sample_pgd_linf_report.json` and `coco_scenes_benchmark.json`;
+   `pytest -m integration` is green (31 passed). Snapshot byte-identity is still
+   CPU-only and will need re-locking across future torch/driver upgrades
+   _(engineering risk)_.
 
 **Mid-term (differentiating capabilities)**
 7. Physical patch / camouflage over multi-view scenes and printability
