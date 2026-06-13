@@ -9,8 +9,8 @@
       }
     },
     {
-      "attacked_map": 0.0,
-      "map_delta": 0.3898199023199024,
+      "attacked_map": 0.00015432098765432098,
+      "map_delta": 0.38966558133224805,
       "name": "pgd-linf",
       "params": {
         "eps": 0.03,
@@ -20,8 +20,8 @@
       }
     },
     {
-      "attacked_map": 0.0015873015873015873,
-      "map_delta": 0.3882326007326008,
+      "attacked_map": 0.001146384479717813,
+      "map_delta": 0.38867351784018456,
       "name": "pgd-l2",
       "params": {
         "eps": 3.0,
@@ -31,8 +31,8 @@
       }
     },
     {
-      "attacked_map": 0.09117535903250189,
-      "map_delta": 0.2986445432874005,
+      "attacked_map": 0.06470458553791887,
+      "map_delta": 0.3251153167819835,
       "name": "patch",
       "params": {
         "patch_size": 0.4,
@@ -41,8 +41,8 @@
       }
     },
     {
-      "attacked_map": 0.17364672364672365,
-      "map_delta": 0.21617317867317873,
+      "attacked_map": 0.1335978835978836,
+      "map_delta": 0.2562220187220188,
       "name": "eot-patch",
       "params": {
         "brightness": 0.1,
@@ -101,6 +101,22 @@
       "attacked_map": 0.18919753086419752,
       "map_delta": 0.20062237145570486,
       "name": "degradation-jpeg_compression",
+      "params": {
+        "severity": 0.8
+      }
+    },
+    {
+      "attacked_map": 0.22280916956842883,
+      "map_delta": 0.16701073275147355,
+      "name": "degradation-smoke",
+      "params": {
+        "severity": 0.8
+      }
+    },
+    {
+      "attacked_map": 0.16541005291005292,
+      "map_delta": 0.22440984940984945,
+      "name": "degradation-dust",
       "params": {
         "severity": 0.8
       }

@@ -60,8 +60,9 @@ def test_high_severity_changes_image(image, mode):
 
 
 def test_stochastic_modes_depend_on_seed(image):
-    # noise / low_light should differ across seeds; deterministic modes need not.
-    for mode in ("gaussian_noise", "low_light"):
+    # noise / low_light / smoke / dust should differ across seeds; deterministic
+    # modes need not.
+    for mode in ("gaussian_noise", "low_light", "smoke", "dust"):
         a = DegradationAttack(mode, severity=0.6, seed=0).apply(DET, image, [])
         b = DegradationAttack(mode, severity=0.6, seed=1).apply(DET, image, [])
         assert not np.array_equal(a, b)

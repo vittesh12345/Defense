@@ -15,7 +15,8 @@ an **optimized patch**, and an **EOT patch** (Expectation Over Transformation:
 a localized patch trained to survive being printed and re-photographed at
 different scales, angles, and lighting), plus a black-box **degradation**
 family (DVE: gaussian/motion blur, gaussian noise, fog, low light, JPEG
-compression) that simulates real sensor and weather conditions.
+compression, smoke, dust) that simulates real sensor and weather conditions —
+including battlefield obscurants and brownout.
 
 ## Results
 
@@ -30,8 +31,8 @@ believable baseline, not a toy 1.0). Every attack measurably degrades detection.
 | fgsm | 0.39 | 0.07 | 0.32 |
 | pgd-linf | 0.39 | 0.00 | 0.39 |
 | pgd-l2 | 0.39 | 0.00 | 0.39 |
-| patch | 0.39 | 0.09 | 0.30 |
-| eot-patch | 0.39 | 0.17 | 0.22 |
+| patch | 0.39 | 0.06 | 0.33 |
+| eot-patch | 0.39 | 0.13 | 0.26 |
 
 **Black-box degradation (DVE), at severity 0.8** — simulated sensor/weather
 conditions:
@@ -41,7 +42,9 @@ conditions:
 | motion_blur | 0.39 | 0.00 | 0.39 |
 | gaussian_noise | 0.39 | 0.02 | 0.37 |
 | low_light | 0.39 | 0.12 | 0.27 |
+| dust | 0.39 | 0.17 | 0.22 |
 | jpeg_compression | 0.39 | 0.19 | 0.20 |
+| smoke | 0.39 | 0.22 | 0.17 |
 | gaussian_blur | 0.39 | 0.27 | 0.12 |
 | fog | 0.39 | 0.28 | 0.11 |
 
@@ -54,7 +57,9 @@ spurious detections). Locked in `tests/baselines/coco_scenes_degradation.json`:
 | motion_blur | 0.10 | 0.00 | 0.00 |
 | gaussian_noise | 0.33 | 0.07 | 0.02 |
 | low_light | 0.39 | 0.24 | 0.12 |
+| dust | 0.37 | 0.17 | 0.17 |
 | jpeg_compression | 0.39 | 0.31 | 0.19 |
+| smoke | 0.25 | 0.21 | 0.22 |
 | gaussian_blur | 0.42 | 0.42 | 0.27 |
 | fog | 0.37 | 0.36 | 0.28 |
 
@@ -94,16 +99,18 @@ number", which also surfaces the small-fixture uncertainty). Locked in
 | Attack | Attacked mAP (mean) | Seed 95% CI | Image-bootstrap 95% CI |
 |---|---|---|---|
 | fgsm | 0.073 | [0.073, 0.073] | [0.000, 0.131] |
-| pgd-linf | 0.000 | [0.000, 0.000] | [0.000, 0.000] |
-| pgd-l2 | 0.002 | [0.002, 0.002] | [0.000, 0.008] |
-| patch | 0.091 | [0.091, 0.091] | [0.000, 0.156] |
-| eot-patch | 0.149 | [0.113, 0.185] | [0.000, 0.199] |
+| pgd-linf | 0.000 | [0.000, 0.000] | [0.000, 0.001] |
+| pgd-l2 | 0.001 | [0.001, 0.001] | [0.000, 0.007] |
+| patch | 0.065 | [0.065, 0.065] | [0.000, 0.098] |
+| eot-patch | 0.131 | [0.108, 0.154] | [0.000, 0.165] |
 | gaussian_blur | 0.273 | [0.273, 0.273] | [0.092, 0.652] |
 | motion_blur | 0.000 | [0.000, 0.000] | [0.000, 0.000] |
 | gaussian_noise | 0.009 | [0.003, 0.015] | [0.000, 0.125] |
 | fog | 0.284 | [0.284, 0.284] | [0.235, 0.361] |
 | low_light | 0.164 | [0.105, 0.224] | [0.000, 0.355] |
 | jpeg_compression | 0.189 | [0.189, 0.189] | [0.000, 0.427] |
+| smoke | 0.235 | [0.128, 0.342] | [0.125, 0.562] |
+| dust | 0.285 | [0.224, 0.345] | [0.079, 0.552] |
 
 Clean mAP = 0.39, image-bootstrap 95% CI [0.125, 0.460] — the wide bootstrap
 intervals honestly reflect that a 3-image set is too small to pin the number
@@ -165,7 +172,7 @@ SCENE="--images proving_ground/data/fixtures/coco_sample/images \
   --patch-size 0.4 --steps 15 --step-size 0.1 --out eot_patch.json
 
 # Degradation / DVE (black-box; modes: gaussian_blur, motion_blur,
-# gaussian_noise, fog, low_light, jpeg_compression)
+# gaussian_noise, fog, low_light, jpeg_compression, smoke, dust)
 .venv/bin/python -m proving_ground.cli run $SCENE --attack degradation \
   --mode fog --severity 0.7 --out fog.json
 ```
@@ -194,10 +201,12 @@ weights and stays fast and deterministic.
 
 ## Reproducibility
 
-`seeding.set_seed()` pins Python/NumPy/Torch RNGs and enables deterministic
-torch algorithms; it is called by both the CLI and the test suite. The only
-non-reproducible field in a report is `meta.timestamp_utc`, which is excluded
-from value comparisons.
+`seeding.set_seed()` pins Python/NumPy/Torch RNGs, enables deterministic
+torch algorithms, and pins BLAS to a single thread (multi-threaded reductions
+are non-associative in float and their scheduling varies across Python
+processes, which would otherwise drift iterative attacks across sessions). It
+is called by both the CLI and the test suite. The only non-reproducible field
+in a report is `meta.timestamp_utc`, which is excluded from value comparisons.
 
 ## Adapter contract
 

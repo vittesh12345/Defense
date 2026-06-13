@@ -7,6 +7,20 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-12** — Added two DVE modes (`smoke`, `dust`) — `_smoke` blends image
+  against a dark-grey veil with a billowing per-pixel opacity field (battlefield
+  obscurants); `_dust` blends against a warm-tan veil with fine grain (brownout
+  / sandstorm). Both seeded-stochastic, both auto-extend the canonical bench
+  and fast-tier snapshot grid via `MODES`. Also **pinned BLAS to a single
+  thread in `seeding.set_seed()`** (`OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`,
+  `torch.set_num_threads(1)`) — multi-threaded reductions are non-associative
+  in float and their scheduling drifts across Python processes, which is what
+  was actually causing the recurring "PyTorch X.YY drifted PGD baselines" pain.
+  Re-locked `coco_scenes_benchmark.json` and `coco_scenes_benchmark_ci.json`;
+  verified inter-session byte-identity from two fresh Python processes. DVE +
+  FGSM rows byte-identical to the prior lock; iterative WB rows shifted to the
+  new pinned values (one-time re-lock to gain inter-session determinism).
+  Updated README tables.
 - **2026-06-12** — Added GitHub Actions CI (`.github/workflows/ci.yml`): ruff +
   fast tier (weight-free) on push/PR; integration tier stays local (not portable
   across CI architectures). README CI badge. Addresses the "no CI committed" risk.
@@ -83,8 +97,8 @@ also white-box) and `UltralyticsYOLOAdapter` (real YOLOv8 with differentiable
   patch rectangle.
 - EOT patch — gradient averaged over sampled scale/rotation/translation/lighting
   transforms; survives held-out renderings.
-- DVE degradation — six black-box modes (gaussian blur, motion blur, gaussian
-  noise, fog, low light, JPEG).
+- DVE degradation — eight black-box modes (gaussian blur, motion blur, gaussian
+  noise, fog, low light, JPEG, smoke, dust).
 
 **Evaluation & reporting**
 - IoU, per-class AP (Pascal-VOC all-points), pooled mAP, clean-vs-attacked
@@ -94,9 +108,10 @@ also white-box) and `UltralyticsYOLOAdapter` (real YOLOv8 with differentiable
 
 **CLI & benchmark** — `proving-ground run` orchestrates one attack end-to-end;
 `proving-ground bench` runs the canonical suite pooled across an image set —
-five white-box attacks (FGSM, PGD-Linf, PGD-L2, patch, EOT-patch) plus all six
+five white-box attacks (FGSM, PGD-Linf, PGD-L2, patch, EOT-patch) plus all eight
 DVE modes at severity 0.8, so one invocation produces the full README headline;
-`seeding.set_seed()` pins all RNGs and torch deterministic algorithms.
+`seeding.set_seed()` pins all RNGs, enables torch deterministic algorithms, and
+pins BLAS to one thread for inter-session byte-identity on iterative attacks.
 
 **Fixtures & locked baselines**
 - 2 synthetic PNGs for smoke tests; 1-image CC0 anchor (`coco_sample`); 3-image
@@ -114,8 +129,8 @@ PNGs; `pyproject.toml` (Python 3.11+, Apache-2.0, ruff/mypy/pytest), README
 result tables, `CONTRIBUTING.md`, `NOTICE` with AGPL warning for ultralytics.
 
 **Headline locked numbers** — clean mAP@0.5 = 0.39 on `coco_scenes`; FGSM →
-0.07, PGD-Linf → 0.00, PGD-L2 → 0.00, patch → 0.09, EOT patch → 0.17; full DVE
-severity grid locked.
+0.07, PGD-Linf → 0.00, PGD-L2 → 0.00, patch → 0.06, EOT patch → 0.13; full DVE
+severity grid locked (eight modes × three severities).
 
 ## 3. In Progress
 
@@ -125,8 +140,8 @@ larger spec capability:
 - **Threat-representative library (cap. #1)** — generic FGSM, PGD-Linf, PGD-L2,
   patch, and EOT exist; C&W, physical camo, decoys, EO/IR/SAR/GPS spoofing not
   started.
-- **DVE simulator (cap. #2)** — six modes shipped; spec also wants smoke, dust,
-  realistic night/IR.
+- **DVE simulator (cap. #2)** — eight modes shipped (incl. smoke + dust); spec
+  also wants realistic night/IR.
 - **Assurance reporting (module #4)** — JSON exists but is not TEVV-mapped.
 
 ## 4. Next Steps
@@ -136,8 +151,8 @@ larger spec capability:
    wedge is visible in the result table _(module #1)_.
 2. Add **C&W** (binary-search-over-trade-off) to round out the textbook
    white-box trio _(cap. #1)_.
-3. Add the missing DVE modes — smoke, dust, sensor-realistic night/IR
-   _(cap. #2)_.
+3. Add sensor-realistic night/IR DVE mode _(cap. #2; smoke + dust shipped
+   2026-06-12)_.
 4. Replace single-seed point estimates with a seed sweep / bootstrap CI in the
    report _(module #3)_.
 5. Promote the DVE severity sweep into a first-class `bench` mode (currently
@@ -202,8 +217,10 @@ larger spec capability:
   certifying-authority use case.
 - ~~No CI committed.~~ GitHub Actions runs ruff + the fast tier on push/PR; the
   integration tier still runs locally only (baselines aren't CI-portable).
-- Snapshot byte-identity holds on CPU but will be fragile across GPU/driver
-  upgrades.
+- Snapshot byte-identity holds on CPU (single-threaded BLAS pinned in
+  `set_seed()` to keep iterative attacks deterministic across Python processes)
+  but will be fragile across GPU/driver upgrades, and re-locking has runtime
+  cost on cores > 1 since torch is held to one thread.
 
 **Strategic positioning**
 - Of the spec's five positioning properties, only **independent** and

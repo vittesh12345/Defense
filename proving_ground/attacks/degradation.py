@@ -24,6 +24,8 @@ MODES = (
     "fog",
     "low_light",
     "jpeg_compression",
+    "smoke",
+    "dust",
 )
 
 
@@ -95,3 +97,31 @@ class DegradationAttack:
         if not ok:
             raise RuntimeError("JPEG encoding failed")
         return cv2.imdecode(buf, cv2.IMREAD_COLOR)
+
+    def _smoke(self, image: np.ndarray) -> np.ndarray:
+        # Non-uniform dark-grey obscurant (battlefield smoke: grenades, fires,
+        # vehicle exhaust). A low-resolution noise field, upsampled to image size,
+        # supplies the billowing per-pixel opacity; the veil color is fixed.
+        t = self.severity * 0.8
+        if t <= 0:
+            return image.copy()
+        h, w = image.shape[:2]
+        ch, cw = max(1, h // 8), max(1, w // 8)
+        coarse = self._rng().standard_normal((ch, cw)).astype(np.float32)
+        field = cv2.resize(coarse, (w, h), interpolation=cv2.INTER_CUBIC)
+        fmin, fmax = float(field.min()), float(field.max())
+        field = (field - fmin) / (fmax - fmin) if fmax > fmin else np.zeros_like(field)
+        alpha = (t * field)[..., None]
+        veil = 80.0
+        return _u8(image.astype(np.float32) * (1.0 - alpha) + veil * alpha)
+
+    def _dust(self, image: np.ndarray) -> np.ndarray:
+        # Warm-tan suspended-particle veil with fine granular noise (brownout,
+        # sandstorms, vehicle disturbance). Uniform opacity plus per-pixel grain
+        # distinguishes it from the bright-white, low-contrast `_fog` haze.
+        t = self.severity * 0.7
+        if t <= 0:
+            return image.copy()
+        veil = np.array([200.0, 175.0, 130.0], dtype=np.float32)
+        grain = self._rng().normal(0.0, self.severity * 6.0, size=image.shape)
+        return _u8(image.astype(np.float32) * (1.0 - t) + veil * t + grain)

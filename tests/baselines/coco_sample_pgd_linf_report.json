@@ -5,15 +5,19 @@
       "attacked_per_class": {
         "bench": 0.0,
         "bicycle": 0.0,
+        "book": 0.0,
         "car": 0.0,
         "chair": 0.0,
         "clock": 0.0,
         "cup": 0.0,
         "dining table": 0.0,
+        "motorcycle": 0.0,
         "person": 0.0,
+        "potted plant": 0.0,
         "stop sign": 0.0,
         "traffic light": 0.0,
-        "train": 0.0
+        "train": 0.0,
+        "umbrella": 0.0
       },
       "map_delta": 1.0,
       "name": "pgd-linf",
@@ -26,15 +30,19 @@
       "per_class_delta": {
         "bench": 0.0,
         "bicycle": 0.0,
+        "book": 0.0,
         "car": 0.0,
         "chair": 0.0,
         "clock": 0.0,
         "cup": 0.0,
         "dining table": 0.0,
+        "motorcycle": 0.0,
         "person": 1.0,
+        "potted plant": 0.0,
         "stop sign": 0.0,
         "traffic light": 0.0,
-        "train": 1.0
+        "train": 1.0,
+        "umbrella": 0.0
       }
     }
   ],

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import numpy as np
 import torch
 
@@ -35,3 +37,24 @@ def test_different_seeds_differ():
 def test_deterministic_algorithms_enabled():
     set_seed(0)
     assert torch.are_deterministic_algorithms_enabled()
+
+
+def test_blas_pinned_to_one_thread():
+    # Multi-threaded BLAS reductions are non-associative and their scheduling
+    # varies across processes, which drifts iterative attacks past the snapshot
+    # tolerance. The pin is what keeps the locked baselines reproducible.
+    set_seed(0)
+    assert torch.get_num_threads() == 1
+    assert os.environ["OMP_NUM_THREADS"] == "1"
+    assert os.environ["MKL_NUM_THREADS"] == "1"
+
+
+def test_blas_pin_overrides_preexisting_env():
+    os.environ["OMP_NUM_THREADS"] = "8"
+    os.environ["MKL_NUM_THREADS"] = "8"
+    try:
+        set_seed(0)
+        assert os.environ["OMP_NUM_THREADS"] == "1"
+        assert os.environ["MKL_NUM_THREADS"] == "1"
+    finally:
+        set_seed(0)

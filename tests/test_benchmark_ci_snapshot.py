@@ -66,3 +66,6 @@ def test_stochastic_vs_deterministic_seed_width(ci):
     assert by_name["eot-patch"]["seed_ci"]["std"] > 0
     # The plain patch is deterministic -> zero-width seed CI.
     assert by_name["patch"]["seed_ci"]["std"] == 0.0
+    # Smoke and dust draw from a seeded RNG -> non-zero seed-CI width.
+    assert by_name["degradation-smoke"]["seed_ci"]["std"] > 0
+    assert by_name["degradation-dust"]["seed_ci"]["std"] > 0
