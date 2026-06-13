@@ -29,14 +29,11 @@ from proving_ground.seeding import set_seed
 DVE_SEVERITY = 0.8
 
 
-def default_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
-    """The canonical attack suite (params kept in sync with the locked baselines).
-
-    White-box attacks first (FGSM, PGD-Linf, PGD-L2, C&W-L2, optimized patch,
-    EOT patch), then the eight DVE degradations at severity 0.8 — one ``bench``
-    invocation produces the full README headline.
-    """
-    suite: list[tuple[Attack, dict[str, float]]] = [
+def white_box_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
+    """The white-box (gradient/optimization) attacks: FGSM, PGD-Linf, PGD-L2,
+    C&W-L2, optimized patch, EOT patch. This is the adversarial threat model the
+    worst-case ensemble runs over."""
+    return [
         (FGSM(eps=0.03), {"eps": 0.03}),
         (PGDLinf(eps=0.03, steps=10, step_size=0.0075),
          {"eps": 0.03, "steps": 10.0, "step_size": 0.0075, "random_init": 0.0}),
@@ -57,12 +54,24 @@ def default_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
           "scale_min": 0.8, "scale_max": 1.2, "rot_deg": 12.0, "trans": 0.05,
           "brightness": 0.1, "contrast": 0.2}),
     ]
-    for mode in DEGRADATION_MODES:
-        suite.append((
-            DegradationAttack(mode=mode, severity=DVE_SEVERITY, seed=seed),
-            {"severity": DVE_SEVERITY},
-        ))
-    return suite
+
+
+def dve_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
+    """The black-box degraded-visual-environment family at severity 0.8."""
+    return [
+        (DegradationAttack(mode=mode, severity=DVE_SEVERITY, seed=seed), {"severity": DVE_SEVERITY})
+        for mode in DEGRADATION_MODES
+    ]
+
+
+def default_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
+    """The canonical attack suite (params kept in sync with the locked baselines).
+
+    White-box attacks first (FGSM, PGD-Linf, PGD-L2, C&W-L2, optimized patch,
+    EOT patch), then the eight DVE degradations at severity 0.8 — one ``bench``
+    invocation produces the full README headline.
+    """
+    return white_box_attacks(seed) + dve_attacks(seed)
 
 
 def run_benchmark(

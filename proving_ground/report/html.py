@@ -44,7 +44,12 @@ def _bar(frac: float, color: str) -> str:
 
 
 def render_html(results: dict, title: str = "Robustness Assurance Report") -> str:
-    body = _render_scorecard(results) if "models" in results else _render_bench(results)
+    if results.get("kind") == "ensemble":
+        body = _render_ensemble(results)
+    elif "models" in results:
+        body = _render_scorecard(results)
+    else:
+        body = _render_bench(results)
     return (
         f"<!doctype html><html><head><meta charset='utf-8'>"
         f"<title>{html.escape(title)}</title><style>{_CSS}</style></head>"
@@ -79,6 +84,46 @@ def _render_bench(r: dict) -> str:
         f"{rows}</table>"
         "<p class='note'>Lower bars = more detection destroyed. Numbers are pooled "
         "mAP@0.5, reproducible against locked baselines.</p>"
+    )
+
+
+def _render_ensemble(r: dict) -> str:
+    clean = r["clean_map"]
+    ens = r["ensemble_map"]
+    retained = ens / clean if clean > 0 else 0.0
+    sub = (f"Worst-case-per-image over {len(r['attacks'])} attacks &middot; "
+           f"{r.get('num_images', '?')} images &middot; mAP@{r.get('iou_threshold', 0.5)}")
+    headline = (
+        f"<p class='sub'>{sub}</p>"
+        f"<table><tr><th>Metric</th><th>mAP</th></tr>"
+        f"<tr><td>Clean</td><td class='num'>{clean:.3f}</td></tr>"
+        f"<tr><td><b>Worst-case ensemble</b> (lower bound)</td>"
+        f"<td class='num'><b>{ens:.3f}</b></td></tr>"
+        f"<tr><td>Strongest single attack "
+        f"({html.escape(r['strongest_single_attack'])})</td>"
+        f"<td class='num'>{r['strongest_single_map']:.3f}</td></tr></table>"
+        f"<p class='note'>The ensemble is {r['ensemble_gain_over_single']:.3f} mAP "
+        f"tighter than the strongest single attack &middot; {retained * 100:.0f}% of "
+        f"clean performance retained against a method-choosing adversary.</p>"
+    )
+    rows = ""
+    for name in sorted(r["attacks"], key=lambda n: r["single_attack_maps"][n]):
+        m = r["single_attack_maps"][name]
+        col = _color(m / clean if clean > 0 else 0.0)
+        rows += (
+            f"<tr><td>{html.escape(name)}</td>"
+            f"<td class='num'>{m:.3f}</td>"
+            f"<td class='num'>{r['win_counts'][name]}/{r['num_images']}</td>"
+            f"<td style='width:160px'>{_bar(m / clean if clean > 0 else 0.0, col)}</td></tr>"
+        )
+    return (
+        headline
+        + "<table><tr><th>Attack</th><th>Pooled mAP</th><th>Images won</th>"
+        "<th>Robustness</th></tr>"
+        + rows
+        + "</table><p class='note'>\"Images won\" = how often each attack was the "
+        "worst for an image. A spread across attacks means no single method dominates "
+        "&mdash; the ensemble is doing real work.</p>"
     )
 
 

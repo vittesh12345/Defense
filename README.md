@@ -122,6 +122,27 @@ even at 6 images because the scenes are genuinely heterogeneous (cyclist 1.00 vs
 the cafe/bus-stop silhouettes ~0.12), so the bootstrap honestly reports high
 scene-to-scene variance. Reproduce with `bench --seeds 5 --bootstrap 1000`.
 
+### Worst-case ensemble (robustness lower bound)
+
+Quoting one attack ("we survive PGD") says nothing about the others. Following
+AutoAttack, `ensemble` runs the white-box attacks and, **per image**, keeps
+whichever hurt most — the robustness you can count on against an adversary free
+to choose their method:
+
+```bash
+.venv/bin/python -m proving_ground.cli ensemble \
+  --images proving_ground/data/fixtures/coco_scenes/images \
+  --ann   proving_ground/data/fixtures/coco_scenes/annotations.json \
+  --model yolov8n.pt --out ensemble.json
+.venv/bin/python -m proving_ground.cli report --in ensemble.json --out ensemble.html
+```
+
+On the coco_scenes set, the worst-case ensemble drives `yolov8n` from clean
+**0.29** to **0.0002** — far below the strongest *single* attack (pgd-linf,
+0.013). The win spread (pgd-linf 3/6 images, patch 2/6, fgsm 1/6) shows no single
+method dominates, so reporting any one attack overstates robustness. Add
+`--full-suite` to fold the DVE degradations into the worst case too.
+
 ### Comparing models — and an honest methodology caveat
 
 `compare` runs the identical attack suite across several detectors and ranks them

@@ -1,0 +1,35 @@
+{
+  "attacks": [
+    "fgsm",
+    "pgd-linf",
+    "pgd-l2",
+    "cw-l2",
+    "patch",
+    "eot-patch"
+  ],
+  "clean_map": 0.29037379793182316,
+  "ensemble_gain_over_single": 0.013219867408436232,
+  "ensemble_map": 0.00021311962368872936,
+  "iou_threshold": 0.5,
+  "kind": "ensemble",
+  "map_delta": 0.2901606783081344,
+  "num_images": 6,
+  "single_attack_maps": {
+    "cw-l2": 0.06394988867814955,
+    "eot-patch": 0.0982888407888408,
+    "fgsm": 0.0736948155013154,
+    "patch": 0.07177372685185185,
+    "pgd-l2": 0.024845521541950112,
+    "pgd-linf": 0.013432987032124961
+  },
+  "strongest_single_attack": "pgd-linf",
+  "strongest_single_map": 0.013432987032124961,
+  "win_counts": {
+    "cw-l2": 0,
+    "eot-patch": 0,
+    "fgsm": 1,
+    "patch": 2,
+    "pgd-l2": 0,
+    "pgd-linf": 3
+  }
+}

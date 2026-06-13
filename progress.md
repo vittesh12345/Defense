@@ -7,6 +7,20 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Added the **AutoAttack-style worst-case ensemble**
+  (`proving_ground/ensemble.py`, `cli ensemble`): per image, run every white-box
+  attack and keep whichever drove that image's mAP lowest; pool the worst cases →
+  `ensemble_map`, a robustness lower bound against a method-choosing adversary. Reports
+  per-attack `win_counts` (which attack was worst for how many images) so a diverse
+  spread evidences the ensemble is doing real work. Seeding mirrors `run_benchmark`
+  (numbers line up with the per-attack bench). On coco_scenes yolov8n drops clean
+  0.29 → **0.0002** worst-case, far below the strongest single attack (pgd-linf 0.013);
+  wins split pgd-linf 3 / patch 2 / fgsm 1 of 6. Refactored `default_attacks` into
+  `white_box_attacks` + `dve_attacks` (output identical → baselines unaffected); ensemble
+  runs white-box by default, `--full-suite` adds DVE. HTML report renders an "ensemble"
+  kind. Fast-tested on FakeDetector (lower-bound invariant, win-count coverage,
+  determinism, empty-attacks guard) + integration snapshot locked
+  (`coco_scenes_ensemble.json`).
 - **2026-06-13** — Folded **C&W-L2 into the headline suite**: `default_attacks()` now
   runs FGSM, PGD-Linf, PGD-L2, **C&W-L2**, patch, EOT patch + 8 DVE = **14 conditions**.
   Suite C&W params tuned for the coco_scenes loss scale (kappa=20, max_iter=15,

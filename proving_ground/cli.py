@@ -252,6 +252,30 @@ def bench(args: argparse.Namespace) -> int:
     return 0
 
 
+def ensemble(args: argparse.Namespace) -> int:
+    """Worst-case-per-image ensemble: a robustness lower bound over the attacks."""
+    import json
+    from pathlib import Path
+
+    from proving_ground.benchmark import default_attacks, white_box_attacks
+    from proving_ground.ensemble import ensemble_table, run_ensemble
+
+    set_seed(args.seed)
+    samples, classes = _load_samples(args)
+    detector, _ = _build_detector(args.model)
+    attacks = (default_attacks(seed=args.seed) if args.full_suite
+               else white_box_attacks(seed=args.seed))
+    results = run_ensemble(
+        detector, samples, classes, attacks, iou_threshold=args.iou, seed=args.seed,
+    )
+    if args.out:
+        Path(args.out).write_text(json.dumps(results, indent=2, sort_keys=True) + "\n")
+    print(ensemble_table(results))
+    if args.out:
+        print(f"\nensemble results written: {args.out}")
+    return 0
+
+
 def compare(args: argparse.Namespace) -> int:
     """Run the canonical attack suite across several models; emit a scorecard."""
     import json
@@ -437,6 +461,22 @@ def build_parser() -> argparse.ArgumentParser:
                    help="treat --images/--ann as a COCO val dir + instances JSON")
     b.add_argument("--limit", type=int, default=None, help="COCO: keep first N images")
     b.set_defaults(func=bench)
+
+    e = sub.add_parser("ensemble",
+                       help="worst-case-per-image ensemble: a robustness lower bound")
+    e.add_argument("--images", required=True, help="directory of images")
+    e.add_argument("--ann", required=True, help="annotations JSON")
+    e.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
+    e.add_argument("--full-suite", dest="full_suite", action="store_true",
+                   help="ensemble over the full suite (white-box + DVE) instead of "
+                        "white-box only")
+    e.add_argument("--seed", type=int, default=0)
+    e.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
+    e.add_argument("--out", default=None, help="optional results JSON path")
+    e.add_argument("--coco", action="store_true",
+                   help="treat --images/--ann as a COCO val dir + instances JSON")
+    e.add_argument("--limit", type=int, default=None, help="COCO: keep first N images")
+    e.set_defaults(func=ensemble)
 
     c = sub.add_parser("compare", help="rank several models by robustness under the attack suite")
     c.add_argument("--images", required=True, help="directory of images")
