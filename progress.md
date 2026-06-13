@@ -7,6 +7,12 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Added video support (`proving_ground/video.py`, `cli video
+  --video clip.mp4 --frames N --mode <dve>`): samples frames, applies a black-box
+  degradation per frame, reports a GT-free detection-stability metric
+  (attacked/clean detections) for unlabelled footage. On a CC-BY city-drone clip,
+  fog cut yolov8n's detections to 23%, motion-blur to 38%. Fast-tested (synthetic
+  frames + written-clip round-trip, no weights). Viewpoint caveat documented.
 - **2026-06-13** — Added a client-readable HTML report (`proving_ground/report/html.py`,
   `cli report --in results.json --out report.html`): renders a `bench` (single-model
   robustness) or `compare` (scorecard, with the incomplete-GT caveat banner) JSON into

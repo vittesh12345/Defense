@@ -267,6 +267,29 @@ def report(args: argparse.Namespace) -> int:
     return 0
 
 
+def video(args: argparse.Namespace) -> int:
+    """Run a degradation attack over sampled video frames (GT-free stability)."""
+    import json
+    from pathlib import Path
+
+    from proving_ground.attacks.degradation import DegradationAttack
+    from proving_ground.video import run_video
+
+    set_seed(args.seed)
+    detector, _ = _build_detector(args.model)
+    attack = DegradationAttack(mode=args.mode, severity=args.severity, seed=args.seed)
+    res = run_video(detector, attack, args.video, n_frames=args.frames)
+    retained = res["detection_retained"]
+    retained_str = f"{retained * 100:.0f}%" if retained is not None else "n/a"
+    print(f"{res['n_frames']} frames | attack {res['attack']} | "
+          f"clean {res['clean_detections']} det -> attacked {res['attacked_detections']} det "
+          f"(detections retained {retained_str})")
+    if args.out:
+        Path(args.out).write_text(json.dumps(res, indent=2) + "\n")
+        print(f"results written: {args.out}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="proving-ground")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -350,6 +373,17 @@ def build_parser() -> argparse.ArgumentParser:
     rp.add_argument("--out", required=True, help="output HTML path")
     rp.add_argument("--title", default="Robustness Assurance Report", help="report title")
     rp.set_defaults(func=report)
+
+    v = sub.add_parser("video", help="run a degradation over sampled video frames (GT-free)")
+    v.add_argument("--video", required=True, help="path to a video file")
+    v.add_argument("--frames", type=int, default=8, help="number of frames to sample")
+    v.add_argument("--model", default="yolov8n.pt", help="'fake' or a YOLO weights path/name")
+    v.add_argument("--mode", default="fog", choices=list(DEGRADATION_MODES),
+                   help="degradation mode to apply per frame")
+    v.add_argument("--severity", type=float, default=0.8, help="degradation severity in [0,1]")
+    v.add_argument("--seed", type=int, default=0)
+    v.add_argument("--out", default=None, help="optional results JSON path")
+    v.set_defaults(func=video)
     return parser
 
 
