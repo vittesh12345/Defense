@@ -293,6 +293,33 @@ def tevv(args: argparse.Namespace) -> int:
     return 0
 
 
+def monitor(args: argparse.Namespace) -> int:
+    """Diff a current bench result against a baseline; gate on regression."""
+    import json
+    from pathlib import Path
+
+    from proving_ground.report.monitor import diff_results, render_monitor_html
+
+    baseline = json.loads(Path(args.baseline).read_text())
+    current = json.loads(Path(args.current).read_text())
+    diff = diff_results(baseline, current, abs_floor=args.abs_floor, rel_floor=args.rel_floor)
+
+    if args.out:
+        Path(args.out).write_text(render_monitor_html(diff, model=args.model, title=args.title))
+        print(f"monitor report written: {args.out}")
+    if args.out_json:
+        Path(args.out_json).write_text(json.dumps(diff, indent=2, sort_keys=True))
+        print(f"monitor diff JSON written: {args.out_json}")
+
+    print(f"VERDICT: {diff['verdict']}  "
+          f"({diff['n_regressed']}/{diff['n_conditions']} conditions regressed) — "
+          f"{diff['rationale']}")
+
+    if diff["verdict"] == "REGRESSED" and not args.no_gate:
+        return 1
+    return 0
+
+
 def video(args: argparse.Namespace) -> int:
     """Run a degradation attack over sampled video frames (GT-free stability)."""
     import json
@@ -416,6 +443,23 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--min-retained", type=float, default=0.50,
                    help="per-condition robustness floor (fraction of clean mAP retained)")
     t.set_defaults(func=tevv)
+
+    m = sub.add_parser("monitor",
+                       help="diff a current bench result vs a baseline; gate on regression")
+    m.add_argument("--baseline", required=True, help="locked baseline bench results JSON")
+    m.add_argument("--current", required=True, help="current bench results JSON to check")
+    m.add_argument("--out", default=None, help="optional output HTML diff report path")
+    m.add_argument("--out-json", dest="out_json", default=None,
+                   help="optional output diff JSON path")
+    m.add_argument("--model", default="model under test", help="model name for the report")
+    m.add_argument("--title", default="Robustness Regression Monitor", help="report title")
+    m.add_argument("--abs-floor", dest="abs_floor", type=float, default=0.02,
+                   help="absolute mAP-drop floor to flag a regression")
+    m.add_argument("--rel-floor", dest="rel_floor", type=float, default=0.05,
+                   help="relative mAP-drop floor (fraction of baseline) to flag a regression")
+    m.add_argument("--no-gate", dest="no_gate", action="store_true",
+                   help="report only; always exit 0 (don't fail CI on regression)")
+    m.set_defaults(func=monitor)
 
     v = sub.add_parser("video", help="run a degradation over sampled video frames (GT-free)")
     v.add_argument("--video", required=True, help="path to a video file")

@@ -7,6 +7,16 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Added continuous monitoring (`proving_ground/report/monitor.py`,
+  `cli monitor --baseline old.json --current new.json`): diffs a current bench result
+  against a locked baseline and flags **regressions** so a retrain/checkpoint/quant/dep
+  bump can be **gated in CI**. A condition regresses only when the mAP drop clears BOTH
+  an absolute floor (`--abs-floor`, default 0.02) AND a relative floor (`--rel-floor`,
+  default 5%) — avoids tiny-mAP noise and large-mAP wobble both tripping false alarms.
+  Verdict REGRESSED exits non-zero (`--no-gate` to report only); emits diff JSON +
+  color-coded HTML (old→new, Δ, Δ%, regressed/improved/stable). Conditions in only one
+  run are reported but never gate. Fast-tested (both-floors logic, improvement/coverage
+  changes, escaping; no weights).
 - **2026-06-13** — Added the TEVV assurance report (`proving_ground/report/tevv.py`,
   `cli tevv --in results.json --out assurance.html`): turns a `bench` result into a
   PASS/CONDITIONAL/FAIL **verdict** against acceptance criteria — baseline competence

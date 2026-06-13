@@ -197,6 +197,25 @@ robustness (retained ≥ `--min-retained`). **CONDITIONAL** = fieldable only wit
 mitigations for the conditions that fall below the floor. Criteria are
 configurable — the artifact records the *judgement*, not the policy.
 
+### Continuous monitoring (regression gate)
+
+`monitor` diffs a **current** `bench` result against a locked **baseline** and
+flags conditions whose mAP regressed — so a retrain, new checkpoint, quantisation
+step, or dependency bump can be gated in CI before it ships:
+
+```bash
+.venv/bin/python -m proving_ground.cli monitor \
+  --baseline baseline.json --current current.json \
+  --out monitor.html --out-json monitor.json --model yolov8n.pt
+# exit code 1 if any condition regressed (use --no-gate to report only)
+```
+
+A condition is a regression only when the drop clears **both** floors — absolute
+(`--abs-floor`, default 0.02) **and** relative (`--rel-floor`, default 5% of
+baseline) — which avoids tiny-mAP noise and large-mAP wobble both tripping false
+alarms. Verdict `REGRESSED` exits non-zero (CI-gating); conditions present in only
+one run are reported but never gate.
+
 ### Video / drone footage (unlabelled)
 
 `video` samples frames from a clip and reports a GT-free **detection-stability**
