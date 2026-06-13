@@ -141,19 +141,30 @@ result. (Within a *single* model, clean-vs-attacked degradation is unaffected an
 stays valid.)
 
 **The credible path: run on COCO val2017**, which is exhaustively annotated.
-Point `compare`/`bench` at your COCO download with `--coco` (images dir +
-`instances_val2017.json`); `--limit N` takes a subset:
+`tools/fetch_coco_val.py` grabs a deterministic subset (first N images by id;
+COCO images carry mixed licenses so none are committed), then point
+`compare`/`bench` at it with `--coco`:
 
 ```bash
+python tools/fetch_coco_val.py --out-dir coco_val --limit 100
 .venv/bin/python -m proving_ground.cli compare --coco --limit 100 \
-  --images /path/to/coco/val2017 \
-  --ann   /path/to/coco/annotations/instances_val2017.json \
+  --images coco_val/val2017 --ann coco_val/annotations/instances_val2017.json \
   --models yolov8n.pt,yolov8s.pt,yolov8m.pt --out scorecard.json
+.venv/bin/python -m proving_ground.cli report --in scorecard.json --out scorecard.html
 ```
 
-COCO images carry mixed third-party licenses, so none are committed here — supply
-your own download. The loader maps COCO categories to the detector's classes by
-name (robust to COCO's gappy ids).
+Example result (50 COCO val images, reduced attack set) — note the ranking is
+*sane* on complete labels (bigger = more accurate **and** more robust), unlike
+the salient-GT artifact above:
+
+| Rank | Model | Clean mAP | Mean attacked | Retained | Weakest vs |
+|---|---|---|---|---|---|
+| 1 | yolov8m | 0.55 | 0.36 | 64% | pgd-linf |
+| 2 | yolov8s | 0.48 | 0.29 | 60% | pgd-linf |
+| 3 | yolov8n | 0.38 | 0.20 | 52% | pgd-linf |
+
+The loader maps COCO categories to the detector's classes by name (robust to
+COCO's gappy ids).
 
 ### Client-readable report
 

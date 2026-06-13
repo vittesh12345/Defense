@@ -1,14 +1,14 @@
 {
   "attacks": [
     {
-      "attacked_map": 0.125,
+      "attacked_map": 0.16666666666666666,
       "attacked_per_class": {
         "chair": 0.0,
-        "person": 0.5,
+        "person": 0.6666666666666666,
         "potted plant": 0.0,
         "train": 0.0
       },
-      "map_delta": 0.875,
+      "map_delta": 0.8333333333333334,
       "name": "patch",
       "params": {
         "loc_x": 0.3,
@@ -19,7 +19,7 @@
       },
       "per_class_delta": {
         "chair": 0.0,
-        "person": 0.5,
+        "person": 0.33333333333333337,
         "potted plant": 0.0,
         "train": 1.0
       }

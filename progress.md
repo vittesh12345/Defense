@@ -7,6 +7,16 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Solidified the COCO demo: added `tools/fetch_coco_val.py`
+  (downloads a deterministic COCO val subset — first N by id — so the scorecard is
+  reproducible; images stay external). Ran a 50-image credible scorecard:
+  yolov8m 64% retained > s 60% > n 52%, all weakest vs pgd-linf — sane ranking on
+  complete labels (bigger = more accurate AND more robust). Re-locked the two
+  cross-machine-drifted iterative baselines on this machine (patch 0.125→0.167 by
+  one detection; pgd-linf map unchanged, only incidental FP classes) to restore a
+  green integration tier. NOTE: iterative-attack snapshot baselines are
+  machine-specific — the BLAS pin gives cross-*session* determinism, not
+  cross-*machine*; re-lock when the canonical machine changes.
 - **2026-06-13** — Added a COCO instances-JSON loader (`proving_ground/data/coco.py`)
   + `--coco`/`--limit` on `bench` and `compare` — the credible-scorecard path:
   COCO val2017 is exhaustively annotated, so cross-model comparison is no longer
