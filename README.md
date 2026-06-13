@@ -21,32 +21,33 @@ including battlefield obscurants and brownout.
 ## Results
 
 Pooled mAP@0.5 of `yolov8n` over a small set of cluttered, hand-annotated CC0
-street scenes (`proving_ground/data/fixtures/coco_scenes/`, clean = **0.39** — a
-believable baseline, not a toy 1.0). Every attack measurably degrades detection.
+scenes (`proving_ground/data/fixtures/coco_scenes/`, **6 images**, clean =
+**0.29** — a believable baseline, not a toy 1.0). Every attack measurably
+degrades detection.
 
 **White-box attacks:**
 
 | Attack | Clean mAP | Attacked mAP | Δ (drop) |
 |---|---|---|---|
-| fgsm | 0.39 | 0.07 | 0.32 |
-| pgd-linf | 0.39 | 0.00 | 0.39 |
-| pgd-l2 | 0.39 | 0.00 | 0.39 |
-| patch | 0.39 | 0.06 | 0.33 |
-| eot-patch | 0.39 | 0.13 | 0.26 |
+| fgsm | 0.29 | 0.07 | 0.22 |
+| pgd-linf | 0.29 | 0.01 | 0.28 |
+| pgd-l2 | 0.29 | 0.03 | 0.27 |
+| patch | 0.29 | 0.07 | 0.22 |
+| eot-patch | 0.29 | 0.10 | 0.19 |
 
 **Black-box degradation (DVE), at severity 0.8** — simulated sensor/weather
-conditions:
+conditions (incl. battlefield smoke and brownout dust):
 
 | Degradation | Clean mAP | Attacked mAP | Δ (drop) |
 |---|---|---|---|
-| motion_blur | 0.39 | 0.00 | 0.39 |
-| gaussian_noise | 0.39 | 0.02 | 0.37 |
-| low_light | 0.39 | 0.12 | 0.27 |
-| dust | 0.39 | 0.17 | 0.22 |
-| jpeg_compression | 0.39 | 0.19 | 0.20 |
-| smoke | 0.39 | 0.22 | 0.17 |
-| gaussian_blur | 0.39 | 0.27 | 0.12 |
-| fog | 0.39 | 0.28 | 0.11 |
+| motion_blur | 0.29 | 0.06 | 0.23 |
+| gaussian_noise | 0.29 | 0.08 | 0.21 |
+| dust | 0.29 | 0.13 | 0.16 |
+| low_light | 0.29 | 0.13 | 0.16 |
+| jpeg_compression | 0.29 | 0.18 | 0.11 |
+| smoke | 0.29 | 0.19 | 0.10 |
+| gaussian_blur | 0.29 | 0.22 | 0.07 |
+| fog | 0.29 | 0.23 | 0.06 |
 
 Full severity sweep (attacked mAP@0.5 by severity; higher severity ⇒ more
 degradation, monotonic-ish — mild blur can even raise mAP slightly by suppressing
@@ -54,14 +55,14 @@ spurious detections). Locked in `tests/baselines/coco_scenes_degradation.json`:
 
 | Degradation mode | sev 0.25 | sev 0.50 | sev 0.80 |
 |---|---|---|---|
-| motion_blur | 0.10 | 0.00 | 0.00 |
-| gaussian_noise | 0.33 | 0.07 | 0.02 |
-| low_light | 0.39 | 0.24 | 0.12 |
-| dust | 0.37 | 0.17 | 0.17 |
-| jpeg_compression | 0.39 | 0.31 | 0.19 |
-| smoke | 0.25 | 0.21 | 0.22 |
-| gaussian_blur | 0.42 | 0.42 | 0.27 |
-| fog | 0.37 | 0.36 | 0.28 |
+| motion_blur | 0.10 | 0.05 | 0.06 |
+| gaussian_noise | 0.28 | 0.11 | 0.08 |
+| dust | 0.27 | 0.11 | 0.13 |
+| low_light | 0.33 | 0.22 | 0.13 |
+| jpeg_compression | 0.29 | 0.23 | 0.18 |
+| smoke | 0.21 | 0.17 | 0.19 |
+| gaussian_blur | 0.30 | 0.33 | 0.22 |
+| fog | 0.27 | 0.32 | 0.23 |
 
 Reproduce a single mode at a chosen severity (used for the severity sweep
 above), e.g.:
@@ -98,23 +99,24 @@ number", which also surfaces the small-fixture uncertainty). Locked in
 
 | Attack | Attacked mAP (mean) | Seed 95% CI | Image-bootstrap 95% CI |
 |---|---|---|---|
-| fgsm | 0.073 | [0.073, 0.073] | [0.000, 0.131] |
-| pgd-linf | 0.000 | [0.000, 0.000] | [0.000, 0.001] |
-| pgd-l2 | 0.001 | [0.001, 0.001] | [0.000, 0.007] |
-| patch | 0.065 | [0.065, 0.065] | [0.000, 0.098] |
-| eot-patch | 0.131 | [0.108, 0.154] | [0.000, 0.165] |
-| gaussian_blur | 0.273 | [0.273, 0.273] | [0.092, 0.652] |
-| motion_blur | 0.000 | [0.000, 0.000] | [0.000, 0.000] |
-| gaussian_noise | 0.009 | [0.003, 0.015] | [0.000, 0.125] |
-| fog | 0.284 | [0.284, 0.284] | [0.235, 0.361] |
-| low_light | 0.164 | [0.105, 0.224] | [0.000, 0.355] |
-| jpeg_compression | 0.189 | [0.189, 0.189] | [0.000, 0.427] |
-| smoke | 0.235 | [0.128, 0.342] | [0.125, 0.562] |
-| dust | 0.285 | [0.224, 0.345] | [0.079, 0.552] |
+| fgsm | 0.074 | [0.074, 0.074] | [0.019, 0.215] |
+| pgd-linf | 0.013 | [0.013, 0.013] | [0.000, 0.072] |
+| pgd-l2 | 0.025 | [0.025, 0.025] | [0.002, 0.115] |
+| patch | 0.072 | [0.072, 0.072] | [0.003, 0.116] |
+| eot-patch | 0.103 | [0.067, 0.139] | [0.007, 0.132] |
+| gaussian_blur | 0.220 | [0.220, 0.220] | [0.101, 0.682] |
+| motion_blur | 0.061 | [0.061, 0.061] | [0.003, 0.393] |
+| gaussian_noise | 0.073 | [0.070, 0.076] | [0.019, 0.400] |
+| fog | 0.232 | [0.232, 0.232] | [0.150, 0.402] |
+| low_light | 0.171 | [0.117, 0.226] | [0.047, 0.405] |
+| jpeg_compression | 0.176 | [0.176, 0.176] | [0.074, 0.400] |
+| smoke | 0.217 | [0.123, 0.312] | [0.125, 0.418] |
+| dust | 0.230 | [0.179, 0.281] | [0.042, 0.453] |
 
-Clean mAP = 0.39, image-bootstrap 95% CI [0.125, 0.460] — the wide bootstrap
-intervals honestly reflect that a 3-image set is too small to pin the number
-down. Reproduce with `bench --seeds 5 --bootstrap 1000`.
+Clean mAP = 0.29, image-bootstrap 95% CI [0.091, 0.480] — the intervals stay wide
+even at 6 images because the scenes are genuinely heterogeneous (cyclist 1.00 vs
+the cafe/bus-stop silhouettes ~0.12), so the bootstrap honestly reports high
+scene-to-scene variance. Reproduce with `bench --seeds 5 --bootstrap 1000`.
 
 ### Clean vs attacked detections
 

@@ -12,9 +12,13 @@ single-image regression anchor.
 | `nyc_crossing.jpg` | People crossing street | Mike Petrucci | https://commons.wikimedia.org/wiki/File:People_crossing_street_(Unsplash).jpg |
 | `hanoi_market.jpg` | Street market in Hanoi, 2003 July 41 | Syced | https://commons.wikimedia.org/wiki/File:Street_market_in_Hanoi,_2003_July_41.jpg |
 | `bayside_bench.jpg` | Family sitting on bench watching bay | D Coetzee | https://commons.wikimedia.org/wiki/File:Family_sitting_on_bench_watching_bay_(6968370946).jpg |
+| `cyclist.jpg` | Man riding bicycle | Clem Onojeghuo | https://commons.wikimedia.org/wiki/File:Man_riding_bicycle_(Unsplash).jpg |
+| `cafe_window.jpg` | Cafe with view on a cathedral | Christian Battaglia | https://commons.wikimedia.org/wiki/File:Cafe_with_view_on_a_cathedral_(Unsplash).jpg |
+| `bus_stop.jpg` | People waiting buses at Sanmin Road | 玄史生 | https://commons.wikimedia.org/wiki/File:People_waiting_buses_at_Sanmin_Road_stop_board_20220618.jpg |
 
 License: **CC0 1.0** (https://creativecommons.org/publicdomain/zero/1.0/) for all
-three. Retrieved 2026-06-07. Each was downscaled to ≤ 640 px on the long side and
+six. Retrieved 2026-06-07 (first three) and 2026-06-12 (cyclist, cafe_window,
+bus_stop). Each was downscaled to ≤ 640 px on the long side and
 re-encoded as JPEG (quality 80–82) to keep the committed fixtures small; no
 content was altered.
 

@@ -7,6 +7,13 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Expanded `coco_scenes` from 3 to 6 images (added `cyclist`,
+  `cafe_window`, `bus_stop`; +bicycle/+bus classes), hand-annotated; merged on top
+  of the smoke/dust + BLAS-pin work and re-locked all three coco_scenes baselines
+  over the combined 6-image × 8-mode state (clean mAP 0.39 → 0.29). Honest note:
+  bootstrap CIs stayed wide (clean [0.091, 0.480]) — the new scenes are
+  heterogeneous (cyclist 1.0 vs cafe/bus ~0.12), so the CI reflects real
+  scene-to-scene variance, not just small-n.
 - **2026-06-12** — Added two DVE modes (`smoke`, `dust`) — `_smoke` blends image
   against a dark-grey veil with a billowing per-pixel opacity field (battlefield
   obscurants); `_dust` blends against a warm-tan veil with fine grain (brownout
@@ -114,10 +121,11 @@ DVE modes at severity 0.8, so one invocation produces the full README headline;
 pins BLAS to one thread for inter-session byte-identity on iterative attacks.
 
 **Fixtures & locked baselines**
-- 2 synthetic PNGs for smoke tests; 1-image CC0 anchor (`coco_sample`); 3-image
+- 2 synthetic PNGs for smoke tests; 1-image CC0 anchor (`coco_sample`); 6-image
   realistic CC0 set (`coco_scenes`).
-- Seven golden JSONs in `tests/baselines/`: FGSM, PGD-Linf, PGD-L2, patch,
-  EOT-patch single-image anchors plus aggregate benchmark and DVE severity grid.
+- Golden JSONs in `tests/baselines/`: FGSM, PGD-Linf, PGD-L2, patch, EOT-patch
+  single-image anchors plus the aggregate benchmark, DVE severity grid, and the
+  seed-sweep / image-bootstrap confidence intervals.
 
 **Tests** — fast tier (no weights) covers adapter contract, every attack,
 metrics, report, viz, CLI smoke. Integration tier (`-m integration`) loads real
@@ -128,9 +136,9 @@ attacks degrade mAP, and EOT patches survive held-out transforms.
 PNGs; `pyproject.toml` (Python 3.11+, Apache-2.0, ruff/mypy/pytest), README
 result tables, `CONTRIBUTING.md`, `NOTICE` with AGPL warning for ultralytics.
 
-**Headline locked numbers** — clean mAP@0.5 = 0.39 on `coco_scenes`; FGSM →
-0.07, PGD-Linf → 0.00, PGD-L2 → 0.00, patch → 0.06, EOT patch → 0.13; full DVE
-severity grid locked (eight modes × three severities).
+**Headline locked numbers** — clean mAP@0.5 = 0.29 on `coco_scenes` (6 images);
+FGSM → 0.07, PGD-Linf → 0.01, PGD-L2 → 0.03, patch → 0.07, EOT patch → 0.10; full
+DVE severity grid locked (eight modes × three severities) + seed/bootstrap CIs.
 
 ## 3. In Progress
 

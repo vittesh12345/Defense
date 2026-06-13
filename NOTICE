@@ -48,6 +48,15 @@ proving_ground/data/fixtures/coco_scenes/
   images/bayside_bench.jpg
     "Family sitting on bench watching bay" by D Coetzee
     https://commons.wikimedia.org/wiki/File:Family_sitting_on_bench_watching_bay_(6968370946).jpg
+  images/cyclist.jpg
+    "Man riding bicycle" by Clem Onojeghuo
+    https://commons.wikimedia.org/wiki/File:Man_riding_bicycle_(Unsplash).jpg
+  images/cafe_window.jpg
+    "Cafe with view on a cathedral" by Christian Battaglia
+    https://commons.wikimedia.org/wiki/File:Cafe_with_view_on_a_cathedral_(Unsplash).jpg
+  images/bus_stop.jpg
+    "People waiting buses at Sanmin Road" by 玄史生
+    https://commons.wikimedia.org/wiki/File:People_waiting_buses_at_Sanmin_Road_stop_board_20220618.jpg
 
 Ground-truth annotations were hand-drawn by visual inspection (never copied from
 any model's predictions).

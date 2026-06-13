@@ -53,10 +53,11 @@ def test_ci_matches_locked_baseline(ci):
 def test_ci_bounds_are_ordered(ci):
     cb = ci["clean_bootstrap_ci"]
     assert cb["ci_lo"] <= cb["mean"] <= cb["ci_hi"]
+    eps = 1e-9  # mean = sum/n can land 1 ULP outside [min, max] for equal values
     for a in ci["attacks"]:
         s, b = a["seed_ci"], a["bootstrap_ci"]
-        assert s["ci_lo"] <= s["mean"] <= s["ci_hi"]
-        assert s["min"] <= s["mean"] <= s["max"]
+        assert s["ci_lo"] - eps <= s["mean"] <= s["ci_hi"] + eps
+        assert s["min"] - eps <= s["mean"] <= s["max"] + eps
         assert b["ci_lo"] <= b["mean"] <= b["ci_hi"]
 
 

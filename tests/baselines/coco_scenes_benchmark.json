@@ -1,16 +1,16 @@
 {
   "attacks": [
     {
-      "attacked_map": 0.07275132275132275,
-      "map_delta": 0.31706857956857964,
+      "attacked_map": 0.0736948155013154,
+      "map_delta": 0.21667898243050776,
       "name": "fgsm",
       "params": {
         "eps": 0.03
       }
     },
     {
-      "attacked_map": 0.00015432098765432098,
-      "map_delta": 0.38966558133224805,
+      "attacked_map": 0.013432987032124961,
+      "map_delta": 0.2769408108996982,
       "name": "pgd-linf",
       "params": {
         "eps": 0.03,
@@ -20,8 +20,8 @@
       }
     },
     {
-      "attacked_map": 0.001146384479717813,
-      "map_delta": 0.38867351784018456,
+      "attacked_map": 0.024845521541950112,
+      "map_delta": 0.26552827638987303,
       "name": "pgd-l2",
       "params": {
         "eps": 3.0,
@@ -31,8 +31,8 @@
       }
     },
     {
-      "attacked_map": 0.06470458553791887,
-      "map_delta": 0.3251153167819835,
+      "attacked_map": 0.07177372685185185,
+      "map_delta": 0.21860007107997131,
       "name": "patch",
       "params": {
         "patch_size": 0.4,
@@ -41,8 +41,8 @@
       }
     },
     {
-      "attacked_map": 0.1335978835978836,
-      "map_delta": 0.2562220187220188,
+      "attacked_map": 0.0982888407888408,
+      "map_delta": 0.19208495714298235,
       "name": "eot-patch",
       "params": {
         "brightness": 0.1,
@@ -58,71 +58,71 @@
       }
     },
     {
-      "attacked_map": 0.27299667924667925,
-      "map_delta": 0.11682322307322313,
+      "attacked_map": 0.22011308970687704,
+      "map_delta": 0.07026070822494612,
       "name": "degradation-gaussian_blur",
       "params": {
         "severity": 0.8
       }
     },
     {
-      "attacked_map": 0.0,
-      "map_delta": 0.3898199023199024,
+      "attacked_map": 0.06072845804988662,
+      "map_delta": 0.22964533988193653,
       "name": "degradation-motion_blur",
       "params": {
         "severity": 0.8
       }
     },
     {
-      "attacked_map": 0.018518518518518517,
-      "map_delta": 0.3713013838013839,
+      "attacked_map": 0.07605820105820106,
+      "map_delta": 0.21431559687362212,
       "name": "degradation-gaussian_noise",
       "params": {
         "severity": 0.8
       }
     },
     {
-      "attacked_map": 0.2839031339031339,
-      "map_delta": 0.1059167684167685,
+      "attacked_map": 0.23219373219373216,
+      "map_delta": 0.05818006573809101,
       "name": "degradation-fog",
       "params": {
         "severity": 0.8
       }
     },
     {
-      "attacked_map": 0.12248175105317961,
-      "map_delta": 0.2673381512667228,
+      "attacked_map": 0.128278897028897,
+      "map_delta": 0.16209490090292616,
       "name": "degradation-low_light",
       "params": {
         "severity": 0.8
       }
     },
     {
-      "attacked_map": 0.18919753086419752,
-      "map_delta": 0.20062237145570486,
+      "attacked_map": 0.17624842539615268,
+      "map_delta": 0.11412537253567048,
       "name": "degradation-jpeg_compression",
       "params": {
         "severity": 0.8
       }
     },
     {
-      "attacked_map": 0.22280916956842883,
-      "map_delta": 0.16701073275147355,
+      "attacked_map": 0.19146091999701625,
+      "map_delta": 0.09891287793480691,
       "name": "degradation-smoke",
       "params": {
         "severity": 0.8
       }
     },
     {
-      "attacked_map": 0.16541005291005292,
-      "map_delta": 0.22440984940984945,
+      "attacked_map": 0.1264798422860017,
+      "map_delta": 0.16389395564582146,
       "name": "degradation-dust",
       "params": {
         "severity": 0.8
       }
     }
   ],
-  "clean_map": 0.3898199023199024,
+  "clean_map": 0.29037379793182316,
   "iou_threshold": 0.5,
-  "num_images": 3
+  "num_images": 6
 }
