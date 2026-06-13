@@ -106,7 +106,7 @@ def test_cli_run_is_reproducible(fixtures_dir, tmp_path):
 
 
 def test_cli_bench_runs_full_canonical_suite(fixtures_dir, tmp_path):
-    """`bench` runs the three white-box attacks plus all six DVE modes in one shot."""
+    """`bench` runs all white-box attacks plus every DVE mode in one shot."""
     out = tmp_path / "results.json"
     rc = main([
         "bench",
@@ -126,7 +126,7 @@ def test_cli_bench_runs_full_canonical_suite(fixtures_dir, tmp_path):
 
     names = [a["name"] for a in results["attacks"]]
     expected = (
-        ["fgsm", "pgd-linf", "pgd-l2", "patch", "eot-patch"]
+        ["fgsm", "pgd-linf", "pgd-l2", "cw-l2", "patch", "eot-patch"]
         + [f"degradation-{m}" for m in DEGRADATION_MODES]
     )
     assert names == expected

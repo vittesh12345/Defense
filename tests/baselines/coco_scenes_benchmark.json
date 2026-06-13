@@ -31,6 +31,18 @@
       }
     },
     {
+      "attacked_map": 0.06394988867814955,
+      "map_delta": 0.22642390925367362,
+      "name": "cw-l2",
+      "params": {
+        "binary_search_steps": 2.0,
+        "confidence": 20.0,
+        "initial_const": 1.0,
+        "lr": 0.02,
+        "max_iter": 15.0
+      }
+    },
+    {
       "attacked_map": 0.07177372685185185,
       "map_delta": 0.21860007107997131,
       "name": "patch",

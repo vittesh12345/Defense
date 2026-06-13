@@ -7,6 +7,15 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Folded **C&W-L2 into the headline suite**: `default_attacks()` now
+  runs FGSM, PGD-Linf, PGD-L2, **C&W-L2**, patch, EOT patch + 8 DVE = **14 conditions**.
+  Suite C&W params tuned for the coco_scenes loss scale (kappa=20, max_iter=15,
+  bsteps=2, lr=0.02 — degrades 0.29→0.06, mid-pack among white-box). Re-locked the two
+  suite baselines on this machine (`coco_scenes_benchmark.json`,
+  `coco_scenes_benchmark_ci.json`); degradation/compare baselines unaffected (they
+  don't use `default_attacks`). Updated the CLI-smoke suite-order assertion + README
+  headline tables. On FakeDetector (toy loss ~[-1/3,1/3]) kappa=20 is unreachable so
+  C&W is a deterministic no-op there — fine for the structural compare test.
 - **2026-06-13** — Threat-library depth: added the **Carlini-Wagner L2** attack
   (`proving_ground/attacks/cw.py`, `run --attack cw-l2`) — the gold-standard
   minimal-perturbation white-box attack. tanh box-constraint + Adam + binary search
@@ -17,8 +26,8 @@ file under 250 lines.
   Fast-tested on the toy linear model (margin reached, larger kappa → larger
   perturbation, determinism, white-box requirement, bad params). Integration snapshot
   locked on this machine (`coco_sample_cw_l2_report.json`, kappa=20 → fixture mAP
-  1.0→0.0, byte-identical across runs). NOT added to the default bench suite (kappa is
-  loss-scale-dependent; keeps the 13-condition suite + TEVV/monitor demos stable).
+  1.0→0.0, byte-identical across runs). [Folded into the default suite the same day —
+  see the entry above; kappa is loss-scale-dependent so it was tuned per fixture set.]
 - **2026-06-13** — Added continuous monitoring (`proving_ground/report/monitor.py`,
   `cli monitor --baseline old.json --current new.json`): diffs a current bench result
   against a locked baseline and flags **regressions** so a retrain/checkpoint/quant/dep

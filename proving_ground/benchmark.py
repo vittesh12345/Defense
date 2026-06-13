@@ -12,6 +12,7 @@ from collections.abc import Sequence
 
 from proving_ground.adapters.base import Detector
 from proving_ground.attacks.base import Attack
+from proving_ground.attacks.cw import CarliniWagnerL2
 from proving_ground.attacks.degradation import MODES as DEGRADATION_MODES
 from proving_ground.attacks.degradation import DegradationAttack
 from proving_ground.attacks.eot_patch import EOTPatchAttack
@@ -31,8 +32,9 @@ DVE_SEVERITY = 0.8
 def default_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
     """The canonical attack suite (params kept in sync with the locked baselines).
 
-    White-box attacks first, then the six DVE degradations at severity 0.8 —
-    one ``bench`` invocation now produces the full README headline.
+    White-box attacks first (FGSM, PGD-Linf, PGD-L2, C&W-L2, optimized patch,
+    EOT patch), then the eight DVE degradations at severity 0.8 — one ``bench``
+    invocation produces the full README headline.
     """
     suite: list[tuple[Attack, dict[str, float]]] = [
         (FGSM(eps=0.03), {"eps": 0.03}),
@@ -40,6 +42,12 @@ def default_attacks(seed: int = 0) -> list[tuple[Attack, dict[str, float]]]:
          {"eps": 0.03, "steps": 10.0, "step_size": 0.0075, "random_init": 0.0}),
         (PGDL2(eps=3.0, steps=10, step_size=0.75),
          {"eps": 3.0, "steps": 10.0, "step_size": 0.75, "random_init": 0.0}),
+        # C&W confidence (kappa) is in YOLO's loss units; tuned so the
+        # minimal-perturbation search reliably breaks detection on coco_scenes.
+        (CarliniWagnerL2(confidence=20.0, max_iter=15, lr=0.02,
+                         binary_search_steps=2, initial_const=1.0, seed=seed),
+         {"confidence": 20.0, "max_iter": 15.0, "lr": 0.02,
+          "binary_search_steps": 2.0, "initial_const": 1.0}),
         (PatchAttack(size=0.4, location="center", steps=20, step_size=0.1),
          {"patch_size": 0.4, "steps": 20.0, "step_size": 0.1}),
         (EOTPatchAttack(size=0.4, location="center", steps=15, step_size=0.1, eot_samples=4,

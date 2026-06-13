@@ -1,6 +1,6 @@
 """Locked snapshot of the aggregate benchmark over the coco_scenes set.
 
-Runs the FULL real pipeline (real YOLO + all three attacks) over the realistic
+Runs the FULL real pipeline (real YOLO + the full attack suite) over the realistic
 fixture set and asserts:
 
   (a) two runs are byte-identical (reproducible under our seeding);
