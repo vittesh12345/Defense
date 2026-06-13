@@ -54,6 +54,15 @@ def _predict_all(detector: Detector, samples: list[Sample]) -> list[list[Detecti
     return [detector.predict(s.image) for s in samples]
 
 
+def _load_samples(args: argparse.Namespace):
+    """Load our annotation format, or COCO instances JSON when --coco is set."""
+    if getattr(args, "coco", False):
+        from proving_ground.data.coco import load_coco
+
+        return load_coco(args.images, args.ann, limit=getattr(args, "limit", None))
+    return load_dataset(args.images, args.ann)
+
+
 def _parse_loc(loc: str) -> str | tuple[float, float]:
     if loc == "center":
         return "center"
@@ -202,7 +211,7 @@ def bench(args: argparse.Namespace) -> int:
     from pathlib import Path
 
     set_seed(args.seed)
-    samples, classes = load_dataset(args.images, args.ann)
+    samples, classes = _load_samples(args)
     detector, _ = _build_detector(args.model)
 
     if args.seeds > 1:
@@ -239,7 +248,7 @@ def compare(args: argparse.Namespace) -> int:
     from proving_ground.compare import comparison_table, run_comparison
 
     set_seed(args.seed)
-    samples, classes = load_dataset(args.images, args.ann)
+    samples, classes = _load_samples(args)
     labels = [m.strip() for m in args.models.split(",") if m.strip()]
     detectors = [(_build_detector(m)[0], m) for m in labels]
     results = run_comparison(
@@ -356,6 +365,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="image-bootstrap resamples (CI mode only)")
     b.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
     b.add_argument("--out", default=None, help="optional results JSON path")
+    b.add_argument("--coco", action="store_true",
+                   help="treat --images/--ann as a COCO val dir + instances JSON")
+    b.add_argument("--limit", type=int, default=None, help="COCO: keep first N images")
     b.set_defaults(func=bench)
 
     c = sub.add_parser("compare", help="rank several models by robustness under the attack suite")
@@ -366,6 +378,9 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--seed", type=int, default=0)
     c.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
     c.add_argument("--out", default=None, help="optional scorecard JSON path")
+    c.add_argument("--coco", action="store_true",
+                   help="treat --images/--ann as a COCO val dir + instances JSON")
+    c.add_argument("--limit", type=int, default=None, help="COCO: keep first N images")
     c.set_defaults(func=compare)
 
     rp = sub.add_parser("report", help="render a bench/compare results JSON to an HTML report")

@@ -7,6 +7,13 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Added a COCO instances-JSON loader (`proving_ground/data/coco.py`)
+  + `--coco`/`--limit` on `bench` and `compare` — the credible-scorecard path:
+  COCO val2017 is exhaustively annotated, so cross-model comparison is no longer
+  biased against higher-recall models. Maps COCO categories to the detector's
+  classes by name (robust to gappy ids), `xywh→xyxy`, skips crowd regions.
+  Fast-tested on a synthetic COCO file; COCO images aren't committed (mixed
+  licenses) — point it at a local download. Resolves the comparison caveat.
 - **2026-06-13** — Added video support (`proving_ground/video.py`, `cli video
   --video clip.mp4 --frames N --mode <dve>`): samples frames, applies a black-box
   degradation per frame, reports a GT-free detection-stability metric

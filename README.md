@@ -137,10 +137,23 @@ objects only), which biases comparison **against more capable models**: a
 higher-recall model detects more real-but-unlabelled objects, which score as
 false positives and deflate its mAP. On these fixtures the *smallest* model
 (yolov8n) even shows the *highest* clean mAP — an annotation artifact, not a real
-result. So `compare` is wired and tested, but a trustworthy scorecard must run on
-an **exhaustively-annotated** benchmark (e.g. a COCO val2017 subset). The
-machinery is ready; credible numbers need complete labels. (Within a *single*
-model, clean-vs-attacked degradation is unaffected by this and stays valid.)
+result. (Within a *single* model, clean-vs-attacked degradation is unaffected and
+stays valid.)
+
+**The credible path: run on COCO val2017**, which is exhaustively annotated.
+Point `compare`/`bench` at your COCO download with `--coco` (images dir +
+`instances_val2017.json`); `--limit N` takes a subset:
+
+```bash
+.venv/bin/python -m proving_ground.cli compare --coco --limit 100 \
+  --images /path/to/coco/val2017 \
+  --ann   /path/to/coco/annotations/instances_val2017.json \
+  --models yolov8n.pt,yolov8s.pt,yolov8m.pt --out scorecard.json
+```
+
+COCO images carry mixed third-party licenses, so none are committed here — supply
+your own download. The loader maps COCO categories to the detector's classes by
+name (robust to COCO's gappy ids).
 
 ### Client-readable report
 
