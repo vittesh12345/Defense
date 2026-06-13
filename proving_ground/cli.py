@@ -276,6 +276,23 @@ def report(args: argparse.Namespace) -> int:
     return 0
 
 
+def tevv(args: argparse.Namespace) -> int:
+    """Judge a bench result against acceptance criteria; emit a TEVV assurance case."""
+    import json
+    from pathlib import Path
+
+    from proving_ground.report.tevv import assess, render_tevv_html
+
+    results = json.loads(Path(args.input).read_text())
+    assessment = assess(results, min_clean_map=args.min_clean, min_retained=args.min_retained)
+    Path(args.out).write_text(render_tevv_html(assessment, model=args.model, title=args.title))
+    print(f"VERDICT: {assessment['verdict']}  "
+          f"({assessment['n_pass']}/{len(assessment['conditions'])} conditions pass) — "
+          f"{assessment['rationale']}")
+    print(f"TEVV report written: {args.out}")
+    return 0
+
+
 def video(args: argparse.Namespace) -> int:
     """Run a degradation attack over sampled video frames (GT-free stability)."""
     import json
@@ -388,6 +405,17 @@ def build_parser() -> argparse.ArgumentParser:
     rp.add_argument("--out", required=True, help="output HTML path")
     rp.add_argument("--title", default="Robustness Assurance Report", help="report title")
     rp.set_defaults(func=report)
+
+    t = sub.add_parser("tevv", help="judge a bench result vs acceptance criteria (TEVV verdict)")
+    t.add_argument("--in", dest="input", required=True, help="bench results JSON")
+    t.add_argument("--out", required=True, help="output HTML assurance-case path")
+    t.add_argument("--model", default="model under test", help="model name for the claim")
+    t.add_argument("--title", default="TEVV Robustness Assurance Case", help="report title")
+    t.add_argument("--min-clean", type=float, default=0.30,
+                   help="baseline competence: required clean mAP")
+    t.add_argument("--min-retained", type=float, default=0.50,
+                   help="per-condition robustness floor (fraction of clean mAP retained)")
+    t.set_defaults(func=tevv)
 
     v = sub.add_parser("video", help="run a degradation over sampled video frames (GT-free)")
     v.add_argument("--video", required=True, help="path to a video file")

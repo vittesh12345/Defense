@@ -180,6 +180,23 @@ one-pager (for a non-engineer reader):
   --title "yolov8n Robustness"
 ```
 
+### TEVV assurance verdict
+
+`tevv` judges a `bench` result against **acceptance criteria** and emits a
+**PASS / CONDITIONAL / FAIL** assurance case (Test conditions → Evaluation →
+Verification/Validation + provenance) — the artifact a certifying authority can
+act on, not just numbers:
+
+```bash
+.venv/bin/python -m proving_ground.cli tevv --in results.json --out assurance.html \
+  --model yolov8n.pt --min-clean 0.20 --min-retained 0.40
+```
+
+Criteria: baseline competence (clean mAP ≥ `--min-clean`) + per-condition
+robustness (retained ≥ `--min-retained`). **CONDITIONAL** = fieldable only with
+mitigations for the conditions that fall below the floor. Criteria are
+configurable — the artifact records the *judgement*, not the policy.
+
 ### Video / drone footage (unlabelled)
 
 `video` samples frames from a clip and reports a GT-free **detection-stability**

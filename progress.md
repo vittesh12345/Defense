@@ -7,6 +7,15 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Added the TEVV assurance report (`proving_ground/report/tevv.py`,
+  `cli tevv --in results.json --out assurance.html`): turns a `bench` result into a
+  PASS/CONDITIONAL/FAIL **verdict** against acceptance criteria — baseline competence
+  (clean mAP ≥ `--min-clean`) + per-condition robustness (retained ≥ `--min-retained`)
+  — rendered as a certifying-authority assurance case (Claim → Test conditions →
+  Evaluation/Verification table → Validation/provenance), conditions sorted
+  weakest-first. CONDITIONAL = fieldable only with mitigations for the failing
+  conditions. Criteria are configurable; the artifact records the judgement, not the
+  policy. Fast-tested (verdict logic on synthetic dicts + HTML escaping, no weights).
 - **2026-06-13** — Solidified the COCO demo: added `tools/fetch_coco_val.py`
   (downloads a deterministic COCO val subset — first N by id — so the scorecard is
   reproducible; images stay external). Ran a 50-image credible scorecard:
