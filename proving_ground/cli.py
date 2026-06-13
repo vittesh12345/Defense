@@ -25,6 +25,8 @@ from proving_ground.attacks.degradation import MODES as DEGRADATION_MODES
 from proving_ground.attacks.degradation import DegradationAttack
 from proving_ground.attacks.eot_patch import EOTPatchAttack
 from proving_ground.attacks.fgsm import FGSM
+from proving_ground.attacks.modality import MODES as MODALITY_MODES
+from proving_ground.attacks.modality import ModalityShift
 from proving_ground.attacks.patch import PatchAttack
 from proving_ground.attacks.pgd import PGDLinf
 from proving_ground.attacks.pgd_l2 import PGDL2
@@ -161,6 +163,9 @@ def _build_attack(args: argparse.Namespace) -> tuple[Attack, dict[str, float]]:
         return attack, params
     if args.attack == "degradation":
         attack = DegradationAttack(mode=args.mode, severity=args.severity, seed=args.seed)
+        return attack, {"severity": args.severity}
+    if args.attack == "modality":
+        attack = ModalityShift(mode=args.modality, severity=args.severity, seed=args.seed)
         return attack, {"severity": args.severity}
     raise ValueError(f"unknown attack: {args.attack!r}")
 
@@ -390,10 +395,12 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
     r.add_argument("--attack", default="fgsm",
                    choices=["fgsm", "pgd-linf", "pgd-l2", "cw-l2", "patch", "eot-patch",
-                            "degradation"],
+                            "degradation", "modality"],
                    help="attack to run")
     r.add_argument("--mode", default="gaussian_blur", choices=list(DEGRADATION_MODES),
                    help="degradation: which degradation mode")
+    r.add_argument("--modality", default="thermal_ir", choices=list(MODALITY_MODES),
+                   help="modality: simulated sensor domain shift (uses --severity)")
     r.add_argument("--severity", type=float, default=0.5,
                    help="degradation: severity in [0,1] (0=identity)")
     r.add_argument("--eps", type=float, default=0.03,

@@ -7,6 +7,19 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Added **cross-modality domain-shift probes**
+  (`proving_ground/attacks/modality.py`, `run --attack modality --modality {thermal_ir,sar}`).
+  HONEST SCOPE: no real thermal/radar detector or imagery — these are black-box
+  transforms that render RGB to *resemble* thermal/SAR, measuring how far an optical
+  detector falls (OOD robustness probe, NOT a multi-modal capability claim). thermal_ir
+  = white-hot luminance + smoothing; sar = single-channel backscatter + multiplicative
+  Gamma(L,1/L) speckle (fewer looks as severity rises). severity 0 = identity, blended.
+  Kept OUT of the DVE family + headline suite (different threat model → baselines
+  untouched). On coco_scenes yolov8n collapses to ~0.1 mAP at full shift (clean 0.29);
+  thermal nudges up at low severity (desaturation/blur sometimes helps) so only the
+  full-shift drop is asserted. Fast-tested (shape/dtype, severity-0 identity,
+  determinism, near-grayscale at full shift, seed-driven speckle, bad params) +
+  integration grid snapshot locked (`coco_scenes_modality.json`).
 - **2026-06-13** — Added the **AutoAttack-style worst-case ensemble**
   (`proving_ground/ensemble.py`, `cli ensemble`): per image, run every white-box
   attack and keep whichever drove that image's mAP lowest; pool the worst cases →

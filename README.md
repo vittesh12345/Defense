@@ -18,7 +18,10 @@ a localized patch trained to survive being printed and re-photographed at
 different scales, angles, and lighting), plus a black-box **degradation**
 family (DVE: gaussian/motion blur, gaussian noise, fog, low light, JPEG
 compression, smoke, dust) that simulates real sensor and weather conditions —
-including battlefield obscurants and brownout.
+including battlefield obscurants and brownout. It also ships **cross-modality
+domain-shift probes** (simulated thermal-IR and SAR) that measure how far an
+optical detector falls on another sensor's imagery — an OOD robustness check, not
+a real multi-modal capability (see the caveat below).
 
 ## Results
 
@@ -142,6 +145,39 @@ On the coco_scenes set, the worst-case ensemble drives `yolov8n` from clean
 0.013). The win spread (pgd-linf 3/6 images, patch 2/6, fgsm 1/6) shows no single
 method dominates, so reporting any one attack overstates robustness. Add
 `--full-suite` to fold the DVE degradations into the worst case too.
+
+### Cross-modality domain shift (thermal-IR / SAR) — with an honest caveat
+
+**Caveat first:** we have no thermal/radar detector or imagery, so this does *not*
+evaluate a real IR/SAR sensor. The `modality` transforms render an RGB frame to
+*resemble* a thermal or SAR product and measure how far an **optical** detector
+falls — an out-of-distribution robustness probe ("would this model survive imagery
+from another modality?"), not a multi-modal capability claim. They're kept out of
+the DVE family and the headline suite because the threat model is different.
+
+- `thermal_ir` — white-hot luminance map (chroma gone) + smoothing (lower-res
+  thermal optics).
+- `sar` — single-channel backscatter with multiplicative **speckle** (Gamma(L,1/L)
+  gain; fewer looks L as severity rises).
+
+```bash
+.venv/bin/python -m proving_ground.cli run \
+  --images proving_ground/data/fixtures/coco_scenes/images \
+  --ann   proving_ground/data/fixtures/coco_scenes/annotations.json \
+  --model yolov8n.pt --attack modality --modality sar --severity 0.8 --out run.json
+```
+
+Pooled mAP@0.5 of `yolov8n` over coco_scenes (clean 0.29), severity → 0.25 / 0.5 / 0.8:
+
+| Modality | sev 0.25 | sev 0.5 | sev 0.8 |
+|---|---|---|---|
+| thermal_ir | 0.30 | 0.27 | 0.10 |
+| sar | 0.29 | 0.12 | 0.07 |
+
+At a full shift the optical detector collapses (~0.1 mAP) — the expected OOD
+penalty when an RGB-trained model meets thermal/radar-like input. (thermal at low
+severity nudges *up* — mild desaturation/blur occasionally helps — which is why
+only the full-shift drop is asserted.) Locked in `coco_scenes_modality.json`.
 
 ### Comparing models — and an honest methodology caveat
 
