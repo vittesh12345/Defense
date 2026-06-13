@@ -11,7 +11,9 @@ It ships several attacks — white-box **FGSM** (single-step generic gradient),
 **PGD-Linf** (the standard iterative FGSM at the same L-inf budget — strictly
 stronger), **PGD-L2** (the L2-ball mirror of PGD-Linf — eps budgets the L2 norm
 of the whole perturbation, often a more realistic similarity metric than L-inf),
-an **optimized patch**, and an **EOT patch** (Expectation Over Transformation:
+**C&W-L2** (Carlini-Wagner: the gold-standard *minimal-perturbation* attack —
+tanh box-constraint + Adam + binary search for the smallest L2 perturbation that
+still breaks detection), an **optimized patch**, and an **EOT patch** (Expectation Over Transformation:
 a localized patch trained to survive being printed and re-photographed at
 different scales, angles, and lighting), plus a black-box **degradation**
 family (DVE: gaussian/motion blur, gaussian noise, fog, low light, JPEG

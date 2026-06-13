@@ -20,6 +20,7 @@ from datetime import UTC, datetime
 from proving_ground.adapters.base import Detection, Detector
 from proving_ground.adapters.fake import FakeDetector
 from proving_ground.attacks.base import Attack
+from proving_ground.attacks.cw import CarliniWagnerL2
 from proving_ground.attacks.degradation import MODES as DEGRADATION_MODES
 from proving_ground.attacks.degradation import DegradationAttack
 from proving_ground.attacks.eot_patch import EOTPatchAttack
@@ -144,6 +145,18 @@ def _build_attack(args: argparse.Namespace) -> tuple[Attack, dict[str, float]]:
             "scale_min": args.eot_scale_min, "scale_max": args.eot_scale_max,
             "rot_deg": args.eot_rot_deg, "trans": args.eot_trans,
             "brightness": args.eot_bright, "contrast": args.eot_contrast,
+        }
+        return attack, params
+    if args.attack == "cw-l2":
+        attack = CarliniWagnerL2(
+            confidence=args.cw_confidence, max_iter=args.cw_max_iter, lr=args.cw_lr,
+            binary_search_steps=args.cw_bsteps, initial_const=args.cw_initial_const,
+            seed=args.seed,
+        )
+        params = {
+            "confidence": args.cw_confidence, "max_iter": float(args.cw_max_iter),
+            "lr": args.cw_lr, "binary_search_steps": float(args.cw_bsteps),
+            "initial_const": args.cw_initial_const,
         }
         return attack, params
     if args.attack == "degradation":
@@ -352,7 +365,8 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--ann", required=True, help="annotations JSON")
     r.add_argument("--model", default="fake", help="'fake' or a YOLO weights path/name")
     r.add_argument("--attack", default="fgsm",
-                   choices=["fgsm", "pgd-linf", "pgd-l2", "patch", "eot-patch", "degradation"],
+                   choices=["fgsm", "pgd-linf", "pgd-l2", "cw-l2", "patch", "eot-patch",
+                            "degradation"],
                    help="attack to run")
     r.add_argument("--mode", default="gaussian_blur", choices=list(DEGRADATION_MODES),
                    help="degradation: which degradation mode")
@@ -374,6 +388,16 @@ def build_parser() -> argparse.ArgumentParser:
                    help="pgd-l2: per-step L2 size (literature rule: 2.5 * eps / steps)")
     r.add_argument("--pgd-l2-random-init", action="store_true",
                    help="pgd-l2: start from a uniform point inside the L2 eps-ball")
+    r.add_argument("--cw-confidence", type=float, default=0.0,
+                   help="cw-l2: required loss-increase margin kappa (in the model's loss "
+                        "units; detector-specific). 0 = degenerate no-op")
+    r.add_argument("--cw-max-iter", type=int, default=40,
+                   help="cw-l2: Adam iterations per binary-search step")
+    r.add_argument("--cw-lr", type=float, default=0.01, help="cw-l2: Adam learning rate")
+    r.add_argument("--cw-bsteps", type=int, default=4,
+                   help="cw-l2: binary-search steps over the c trade-off constant")
+    r.add_argument("--cw-initial-const", type=float, default=1.0,
+                   help="cw-l2: initial c trade-off constant")
     r.add_argument("--patch-size", type=float, default=0.4,
                    help="patch attack: patch side as a fraction of each image dim")
     r.add_argument("--patch-loc", default="center",

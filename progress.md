@@ -7,6 +7,18 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Threat-library depth: added the **Carlini-Wagner L2** attack
+  (`proving_ground/attacks/cw.py`, `run --attack cw-l2`) — the gold-standard
+  minimal-perturbation white-box attack. tanh box-constraint + Adam + binary search
+  on the c trade-off, finding the SMALLEST L2 perturbation that still breaks
+  detection. Adapted to our scalar white-box loss: "success" = raising the detection
+  loss by a confidence margin kappa (in the model's loss units, so detector-specific;
+  kappa=0 is the degenerate no-op). Deterministic (init from x0, no random restarts).
+  Fast-tested on the toy linear model (margin reached, larger kappa → larger
+  perturbation, determinism, white-box requirement, bad params). Integration snapshot
+  locked on this machine (`coco_sample_cw_l2_report.json`, kappa=20 → fixture mAP
+  1.0→0.0, byte-identical across runs). NOT added to the default bench suite (kappa is
+  loss-scale-dependent; keeps the 13-condition suite + TEVV/monitor demos stable).
 - **2026-06-13** — Added continuous monitoring (`proving_ground/report/monitor.py`,
   `cli monitor --baseline old.json --current new.json`): diffs a current bench result
   against a locked baseline and flags **regressions** so a retrain/checkpoint/quant/dep
