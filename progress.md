@@ -7,6 +7,10 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Added a client-readable HTML report (`proving_ground/report/html.py`,
+  `cli report --in results.json --out report.html`): renders a `bench` (single-model
+  robustness) or `compare` (scorecard, with the incomplete-GT caveat banner) JSON into
+  a self-contained, color-coded one-pager. Fast-tested (no weights).
 - **2026-06-13** — Added multi-model comparison (`proving_ground/compare.py`,
   `cli compare --models a.pt,b.pt`): runs the attack suite per model, ranks by
   performance retained under attack. **Key finding:** cross-model mAP comparison

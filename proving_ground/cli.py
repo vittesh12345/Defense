@@ -254,6 +254,19 @@ def compare(args: argparse.Namespace) -> int:
     return 0
 
 
+def report(args: argparse.Namespace) -> int:
+    """Render a bench / compare results JSON into a self-contained HTML report."""
+    import json
+    from pathlib import Path
+
+    from proving_ground.report.html import render_html
+
+    results = json.loads(Path(args.input).read_text())
+    Path(args.out).write_text(render_html(results, title=args.title))
+    print(f"report written: {args.out}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="proving-ground")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -331,6 +344,12 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
     c.add_argument("--out", default=None, help="optional scorecard JSON path")
     c.set_defaults(func=compare)
+
+    rp = sub.add_parser("report", help="render a bench/compare results JSON to an HTML report")
+    rp.add_argument("--in", dest="input", required=True, help="results JSON (from bench/compare)")
+    rp.add_argument("--out", required=True, help="output HTML path")
+    rp.add_argument("--title", default="Robustness Assurance Report", help="report title")
+    rp.set_defaults(func=report)
     return parser
 
 
