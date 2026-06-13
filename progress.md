@@ -7,6 +7,14 @@ _Snapshot: 2026-06-09. Reviewed against `project-spec.docx`._
 Reverse-chronological log of changes we make; trim oldest entries to keep this
 file under 250 lines.
 
+- **2026-06-13** — Added multi-model comparison (`proving_ground/compare.py`,
+  `cli compare --models a.pt,b.pt`): runs the attack suite per model, ranks by
+  performance retained under attack. **Key finding:** cross-model mAP comparison
+  is confounded by incomplete (salient) GT — higher-recall models (yolov8s/m)
+  detect more unlabelled objects → counted as FPs → deflated mAP, so yolov8n
+  spuriously tops clean mAP. The machinery is shipped + fast-tested; a *credible*
+  scorecard needs an exhaustively-annotated benchmark (COCO val subset). Within a
+  single model, clean-vs-attacked degradation is unaffected and stays valid.
 - **2026-06-13** — Expanded `coco_scenes` from 3 to 6 images (added `cyclist`,
   `cafe_window`, `bus_stop`; +bicycle/+bus classes), hand-annotated; merged on top
   of the smoke/dust + BLAS-pin work and re-locked all three coco_scenes baselines

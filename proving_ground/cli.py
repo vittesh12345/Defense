@@ -230,6 +230,30 @@ def bench(args: argparse.Namespace) -> int:
     return 0
 
 
+def compare(args: argparse.Namespace) -> int:
+    """Run the canonical attack suite across several models; emit a scorecard."""
+    import json
+    from pathlib import Path
+
+    from proving_ground.benchmark import default_attacks
+    from proving_ground.compare import comparison_table, run_comparison
+
+    set_seed(args.seed)
+    samples, classes = load_dataset(args.images, args.ann)
+    labels = [m.strip() for m in args.models.split(",") if m.strip()]
+    detectors = [(_build_detector(m)[0], m) for m in labels]
+    results = run_comparison(
+        detectors, samples, classes, default_attacks(seed=args.seed),
+        iou_threshold=args.iou, seed=args.seed,
+    )
+    if args.out:
+        Path(args.out).write_text(json.dumps(results, indent=2, sort_keys=True) + "\n")
+    print(comparison_table(results))
+    if args.out:
+        print(f"\nscorecard written: {args.out}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="proving-ground")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -297,6 +321,16 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
     b.add_argument("--out", default=None, help="optional results JSON path")
     b.set_defaults(func=bench)
+
+    c = sub.add_parser("compare", help="rank several models by robustness under the attack suite")
+    c.add_argument("--images", required=True, help="directory of images")
+    c.add_argument("--ann", required=True, help="annotations JSON")
+    c.add_argument("--models", required=True,
+                   help="comma-separated model weights, e.g. yolov8n.pt,yolov8s.pt,yolov8m.pt")
+    c.add_argument("--seed", type=int, default=0)
+    c.add_argument("--iou", type=float, default=0.5, help="IoU threshold for mAP")
+    c.add_argument("--out", default=None, help="optional scorecard JSON path")
+    c.set_defaults(func=compare)
     return parser
 
 
